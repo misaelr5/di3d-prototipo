@@ -11,7 +11,7 @@ const noteInput = el('internal-note');
 const screens = {
   home: el('home'), form: el('edit-view'), confirmation: el('confirmation'),
   inbox: el('inbox'), receipt: el('receipt'), reply: el('clarification-view'),
-  login: el('login'), overview: el('overview'), board: el('board'), contacts: el('contacts')
+  archive: el('archive'), login: el('login'), overview: el('overview'), board: el('board'), contacts: el('contacts')
 };
 const dateFormat = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
 const imageTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif', 'image/bmp'];
@@ -95,6 +95,7 @@ function show(next, focus = true) {
   document.body.dataset.view = next;
   document.body.toggleAttribute('data-team', team);
   el('team-rail').hidden = !team;
+  el('member-label').hidden = !team;
   for (const link of el('team-rail').querySelectorAll('[data-section]')) {
     link.setAttribute('aria-current', link.dataset.section === (working ? 'inbox' : next) ? 'page' : 'false');
   }
@@ -304,6 +305,9 @@ function storageError(text) {
   message(el('storage-error'), text);
 }
 
+let visibleOrderLimit = 25;
+let previousOrderFilter;
+el('more-orders').onclick = () => { visibleOrderLimit += 25; renderInbox(); };
 async function renderInbox() {
   const version = ++listRender;
   try {
@@ -311,11 +315,15 @@ async function renderInbox() {
     if (version !== listRender) return;
     storageError('');
     const query = searchKey(el('order-search').value);
-    const filtered = entries.filter(entry => (!statusFilter.value || entry.state === statusFilter.value)
-      && searchKey([entry.piece, entry.contact, entry.email, reference(entry.id), entry.owner].join(' ')).includes(query));
+    const filtered = entries.filter(entry => !entry.archived && (!statusFilter.value || entry.state === statusFilter.value)
+      && (searchKey([entry.piece, entry.contact, entry.email, entry.phone, reference(entry.id), entry.owner].join(' ')).includes(query) || phoneMatches(entry.phone,query)));
     filtered.sort((a, b) => Number(!!a.sample) - Number(!!b.sample) || b.createdAt.localeCompare(a.createdAt) || b.id - a.id);
     visibleEntries = filtered;
-    const rows = filtered.map((entry) => {
+    const filterKey = JSON.stringify([query,statusFilter.value]);
+    if (filterKey !== previousOrderFilter) visibleOrderLimit = 25;
+    previousOrderFilter = filterKey;
+    el('more-orders').hidden = filtered.length <= visibleOrderLimit;
+    const rows = filtered.slice(0,visibleOrderLimit).map((entry) => {
       const row = el('request-row').content.firstElementChild.cloneNode(true);
       const button = row.querySelector('button');
       button.dataset.id = entry.id;
@@ -341,6 +349,7 @@ el('order-search').addEventListener('input', () => openInbox(false, false));
 
 function renderReceipt(entry) {
   currentEntry = entry;
+  renderProjectTools(entry);
   el('receipt-reference').textContent = reference(entry.id);
   displayDate(el('receipt-date'), entry.createdAt);
   displayBadge(el('receipt-status'), entry.state);
@@ -356,7 +365,7 @@ function renderReceipt(entry) {
   el('receipt-dimensions').hidden = !entry.dimensions;
   el('dimensions-output').textContent = entry.dimensions;
   el('name-output').textContent = entry.contact;
-  el('email-output').textContent = entry.email;
+  el('email-output').textContent = [entry.phone,entry.email].filter(Boolean).join(' · ');
   paintAttachment(el('receipt-file'), entry.attachment, el('download-file'));
   const mockup = mockupFor(entry);
   const figure = el('order-mockup');
@@ -430,7 +439,7 @@ el('client-view').addEventListener('click', () => {
   if (clientScreen === 'reply') openReply(replyTarget.id, replyTarget.index);
   else show(clientScreen);
 });
-el('receipt-back').addEventListener('click', () => openInbox());
+el('receipt-back').addEventListener('click', () => currentEntry?.archived ? openDesk('archive') : openInbox());
 
 function editing(active) {
   el('tracking-read').hidden = active;

@@ -33,6 +33,7 @@
       <button type="button" data-section="inbox"><img src="iconos-tabler/inbox.svg" alt="">Solicitudes</button>
       <button type="button" data-section="board"><img src="iconos-tabler/layout-kanban.svg" alt="">Seguimiento</button>
       <button type="button" data-section="contacts"><img src="iconos-tabler/users.svg" alt="">Contactos</button>
+      <button type="button" data-section="archive"><img src="iconos-tabler/inbox.svg" alt="">Archivo</button>
     </nav>
     <button type="button" id="logout"><img src="iconos-tabler/logout.svg" alt="">Cerrar sesión</button>
   </aside>
@@ -40,7 +41,7 @@
     <div class="shell masthead-inner">
       <button type="button" class="brand" id="home-link" aria-label="DI3D · Volver a la portada"><img src="di3d-blanco.png" width="800" height="870" alt=""></button>
       <h1 id="inbox-heading" tabindex="-1" hidden>Solicitudes de cotización</h1>
-      <span id="site-label">Servicios</span>
+      <label id="member-label" hidden>Integrante de muestra <select id="active-member"><option>Sofía</option><option>Nicolás</option><option>Valentina</option></select></label><span id="site-label">Servicios</span>
     </div>
   </header>
   <main class="shell">
@@ -59,7 +60,7 @@
       </form>
     </section>
     <section id="overview" aria-labelledby="overview-title" class="desk-view" hidden>
-      <header class="desk-head"><div><p class="desk-kicker">Operaciones</p><h1 id="overview-title" tabindex="-1">Resumen del taller</h1></div><span class="desk-date" id="today"></span></header>
+      <header class="desk-head"><div><p class="desk-kicker">Operaciones</p><h1 id="overview-title" tabindex="-1">Resumen del taller</h1></div><button type="button" class="button primary" id="new-project">+ Cargar consulta de WhatsApp</button><span id="today" hidden></span></header>
       <div id="metrics" class="metrics" aria-label="Solicitudes por estado"></div>
       <div class="overview-layout">
         <section class="volume-card"><header><h2>Volumen por servicio</h2>
@@ -73,6 +74,11 @@
         <section class="task-box"><h2>Para atender</h2><div id="task-list"></div></section>
       </div>
     </section>
+    <section id="archive" class="desk-view" aria-labelledby="archive-title" hidden>
+      <header class="desk-head"><h1 id="archive-title" tabindex="-1">Proyectos pasados</h1></header>
+      <label for="archive-search">Buscar por cliente, teléfono, proyecto o referencia</label>
+      <input type="search" id="archive-search"><div id="archive-list"></div>
+    </section>
     <section id="board" aria-labelledby="board-title" class="desk-view" hidden>
       <header class="desk-head"><div><p class="desk-kicker">Operaciones</p><h1 id="board-title" tabindex="-1">Tablero de seguimiento</h1></div></header>
       <p class="muted board-hint">Abrí una ficha para actualizar su estado, responsable o próxima revisión.</p>
@@ -80,7 +86,7 @@
     </section>
     <section id="contacts" aria-labelledby="contacts-title" class="desk-view" hidden>
       <header class="desk-head"><div><p class="desk-kicker">Agenda del equipo</p><h1 id="contacts-title" tabindex="-1">Contactos</h1></div></header>
-      <div class="field desk-search"><label for="contact-search">Buscar por nombre o correo</label><input type="search" id="contact-search"></div>
+      <div class="field desk-search"><label for="contact-search">Buscar por nombre, teléfono o correo</label><input type="search" id="contact-search"></div>
       <div id="contact-list"></div>
     </section>
 
@@ -226,13 +232,13 @@
       <header class="view-bar inbox-header">
         <h2>Bandeja</h2>
         <div class="filter-field">
-          <label for="order-search">Buscar pedido</label><input id="order-search" type="search" placeholder="Pieza, referencia o contacto">
+          <label for="order-search">Buscar pedido</label><input id="order-search" type="search" placeholder="Proyecto, cliente, teléfono o referencia">
           <label for="status-filter">Filtrar por estado</label>
           <select id="status-filter"><option value="">Todos los estados</option></select>
         </div>
       </header>
       <p class="muted" id="inbox-count" role="status"></p>
-      <ul class="request-list" id="request-list"></ul>
+      <ul class="request-list" id="request-list"></ul><button type="button" class="text-button" id="more-orders" hidden>Ver más pedidos</button>
       <template id="request-row">
         <li><button class="request-row" type="button">
           <span class="row-piece"><strong></strong><span></span></span>
@@ -253,6 +259,10 @@
         </header>
         <button id="guide-question" class="button secondary" type="button" hidden></button>
         <p id="late-answer" role="status" hidden>Respuesta nueva del cliente · Cotización ya emitida</p>
+        <section class="project-tools"><div><strong id="source-label"></strong> <button id="change-project" class="text-button">Editar proyecto</button></div>
+          <details id="project-log"><summary>Historial del proyecto</summary><ol id="events"></ol></details>
+          <button class="text-button" id="archive-project"></button>
+        </section>
         <div class="job-grid">
           <section class="job-reference" aria-labelledby="reference-heading">
             <h3 id="reference-heading" class="visually-hidden">Referencia del cliente</h3>
@@ -317,6 +327,24 @@
     </section>
     </div>
   </main>
+  <dialog id="project-dialog" aria-labelledby="project-dialog-title">
+    <form id="project-editor">
+      <h2 id="project-dialog-title">Cargar consulta de WhatsApp</h2>
+      <button type="button" id="wa-example" class="text-button">Usar un mensaje de ejemplo</button>
+      <div class="plan-fields"><label>Cliente<input name="contact" required maxlength="100"></label><label>Teléfono<input name="phone" type="tel" maxlength="40"></label></div>
+      <label>Proyecto<input name="piece" required maxlength="400"></label>
+      <div class="plan-fields"><label>Cantidad<input name="quantity" inputmode="numeric" pattern="[1-9][0-9]*" maxlength="12"></label><label>Servicio<select name="service"></select></label></div>
+      <label>Correo (opcional)<input name="email" type="email" maxlength="254"></label>
+      <label>Mensaje o descripción<textarea name="use" rows="3" maxlength="1800"></textarea></label>
+      <details><summary>Precisiones y archivo</summary>
+        <label>Material<input name="material" maxlength="120"></label><label>Medidas<input name="dimensions" maxlength="180"></label>
+        <label>Adjuntar o reemplazar archivo (hasta 15 MB)<input id="project-file" type="file"></label>
+        <label id="project-remove-label"><input id="project-remove-file" type="checkbox"> Quitar adjunto actual</label>
+      </details>
+      <p id="project-error" role="alert" hidden></p>
+      <div class="form-actions"><button class="button primary" type="submit">Guardar proyecto</button><button type="button" id="close-project" class="text-button">Cancelar</button></div>
+    </form>
+  </dialog>
   <footer class="shell footer"><p>Prototipo de Reac Studio para DI3D · Usá datos de ejemplo. Los cambios se guardan en este navegador.</p><span>Reac Studio</span></footer>
 </body>
 </html>

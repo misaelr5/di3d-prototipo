@@ -1,6 +1,6 @@
 'use strict';
 
-const deskRoutes = { overview: '#equipo', inbox: '#equipo/solicitudes', board: '#equipo/seguimiento', contacts: '#equipo/contactos' };
+const deskRoutes = { archive:'#equipo/archivo', overview: '#equipo', inbox: '#equipo/solicitudes', board: '#equipo/seguimiento', contacts: '#equipo/contactos' };
 const teamHash = (page, id) => page === 'receipt' ? '#equipo/' + id : deskRoutes[page];
 const isTeamScreen = page => page === 'receipt' || Object.hasOwn(deskRoutes, page);
 const sessionKey = 'di3d.equipo.demo';
@@ -24,7 +24,8 @@ function requestLogin(path) {
 
 function navigateTeam(path, focus = true) {
   const id = /^#equipo\/(\d+)$/.exec(path);
-  if (id) return openInbox(true, focus, Number(id[1]));
+  if (id && teamSession()) return requests.get(Number(id[1])).then(entry => entry?.archived ? openReceipt(entry.id,focus) : openInbox(true,focus,Number(id[1])));
+  if (id) return requestLogin(path);
   const page = Object.keys(deskRoutes).find(key => deskRoutes[key] === path) || 'overview';
   return page === 'inbox' ? openInbox(true, focus) : openDesk(page, focus);
 }
@@ -84,6 +85,10 @@ el('logout').addEventListener('click', async () => {
 });
 
 const searchKey = value => value.trim().toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '');
+function phoneMatches(phone, query) {
+  return !!query && /^[+()\d\s-]+$/.test(query) && !!query.replace(/\D/g,'') &&
+    (phone || '').replace(/\D/g,'').includes(query.replace(/\D/g,''));
+}
 const shortDay = value => new Intl.DateTimeFormat('es-AR', {day:'numeric',month:'short',year:'numeric'}).format(new Date(value + 'T12:00:00'));
 function node(tag, text, className) {
   const item = document.createElement(tag);
@@ -233,18 +238,19 @@ function renderBoard(entries) {
 function renderContacts() {
   const contacts = new Map();
   for (const entry of contactEntries) {
-    const key=entry.email.trim().toLowerCase();
-    if (!contacts.has(key)) contacts.set(key, { name:entry.contact, email:entry.email, count:0 });
-    contacts.get(key).count++;
+    const key=(entry.phone?.replace(/[^0-9]/g,'') || entry.email.trim().toLowerCase() || entry.contact);
+    if (!contacts.has(key)) contacts.set(key, { name:entry.contact, email:entry.email, phone:entry.phone, entries:[], count:0 });
+    contacts.get(key).count++; contacts.get(key).entries.push(entry);
   }
   const query=searchKey(el('contact-search').value);
-  const rows=[...contacts.values()].filter(c=>searchKey(c.name+' '+c.email).includes(query)).sort((a,b)=>a.name.localeCompare(b.name,'es')).map(c=>{
-    const button=action('','contact-row',()=>filteredInbox('',c.email));
+  const rows=[...contacts.values()].filter(c=>searchKey([c.name,c.email,c.phone].join(' ')).includes(query) || phoneMatches(c.phone,query)).sort((a,b)=>a.name.localeCompare(b.name,'es')).map(c=>{
+    const button=action('','contact-row',()=>showContactProjects(c));
     const info=node('span');
-    info.append(node('strong',c.name),node('small',c.email));
+    info.append(node('strong',c.name),node('small',c.phone || c.email));
     button.append(node('span',c.name.split(/\s+/).slice(0,2).map(w=>w[0]).join(''),'initials'),info,node('span',c.count===1?'1 solicitud':c.count+' solicitudes'),icon('arrow-right'));
     return button;
   });
+  el('contact-projects')?.remove();
   el('contact-list').replaceChildren(...(rows.length?rows:[node('p','No hay contactos que coincidan con la búsqueda.','muted')]));
 }
 async function openDesk(page, focus=true) {
@@ -256,8 +262,9 @@ async function openDesk(page, focus=true) {
     if (screen!==page || version!==deskVersion) return;
     entries.sort((a,b)=>b.createdAt.localeCompare(a.createdAt) || b.id-a.id);
     storageError('');
-    if (page==='overview') renderOverview(entries);
-    if (page==='board') renderBoard(entries);
+    if (page==='archive') { archiveEntries = entries.filter(e=>e.archived); renderArchive(); }
+    if (page==='overview') renderOverview(entries.filter(e=>!e.archived));
+    if (page==='board') renderBoard(entries.filter(e=>!e.archived));
     if (page==='contacts') { contactEntries=entries; renderContacts(); }
   } catch { if (screen===page) storageError('No se pudieron cargar las solicitudes. Volvé a abrir esta sección.'); }
 }
@@ -328,6 +335,102 @@ el('offer-form').addEventListener('submit', async event => {
   } catch { el('offer-result').textContent = 'No se pudo guardar la cotización. Volvé a intentar.'; }
   finally { save.disabled = false; }
 });
+const memberSelect = el('active-member');
+const savedMember = sessionStorage.getItem('di3d.member');
+if ([...memberSelect.options].some(option=>option.value === savedMember)) memberSelect.value = savedMember;
+function activeMember() { return memberSelect.value; }
+memberSelect.addEventListener('change',()=>sessionStorage.setItem('di3d.member',activeMember()));
+
+const editor = el('project-editor');
+const dialog = el('project-dialog');
+let editingProjectId;
+editor.elements.service.replaceChildren(...[...service.options].map(option=>option.cloneNode(true)));
+function openProjectEditor(entry) {
+  editingProjectId = entry?.id;
+  editor.reset();
+  editor.querySelector('details').open = false;
+  el('project-remove-label').hidden = !entry?.attachment;
+  for (const key of ['contact','phone','piece','quantity','service','email','use','material','dimensions']) editor.elements[key].value = entry?.[key] || '';
+  editor.elements.phone.required = !entry || entry.source === 'WhatsApp';
+  el('wa-example').hidden = !!entry;
+  el('project-dialog-title').textContent = entry ? 'Editar proyecto' : 'Cargar consulta de WhatsApp';
+  message(el('project-error')); dialog.showModal();
+}
+el('new-project').onclick = ()=>openProjectEditor();
+el('change-project').onclick = ()=>openProjectEditor(currentEntry);
+el('close-project').onclick = ()=>dialog.close();
+el('wa-example').onclick = ()=>{
+  const sample = {contact:'Estudio Sur', phone:'000 555 0142', piece:'Organizadores para recepción',
+    quantity:'18', service:'Regalos corporativos', use:'Hola, necesitamos 18 organizadores para recepción. ¿Podrían cotizarlos?'};
+  for (const [key,value] of Object.entries(sample)) editor.elements[key].value = value;
+};
+editor.onsubmit = async event=>{
+  event.preventDefault();
+  const save = editor.querySelector('[type=submit]');
+  if (save.disabled || !teamSession()) return;
+  const fields = Object.fromEntries([...new FormData(editor)].map(([k,v])=>[k,v.trim()]));
+  if (!fields.piece || !fields.contact || (editor.elements.phone.required && !fields.phone)) {
+    message(el('project-error'),'Completá el proyecto, el cliente y los datos de contacto.'); return;
+  }
+  const file = el('project-file').files[0];
+  if (file?.size > 15*1024*1024) { message(el('project-error'),'Elegí un archivo de hasta 15 MB.'); return; }
+  if (file) fields.attachment = {name:file.name,blob:file};
+  else if (el('project-remove-file').checked) fields.attachment = null;
+  save.disabled = true;
+  try {
+    let id = editingProjectId;
+    if (id) await requests.edit(id,fields);
+    else id = await requests.add({attachment:null,...fields,source:'WhatsApp'});
+    dialog.close();
+    if (currentEntry?.archived && editingProjectId) await openReceipt(id);
+    else await openInbox(true,true,id);
+  } catch { message(el('project-error'),'No se pudo guardar el proyecto en este navegador.'); }
+  finally {save.disabled=false;}
+};
+const eventDate = new Intl.DateTimeFormat('es-AR',{day:'2-digit',month:'2-digit',year:'numeric',hour:'2-digit',minute:'2-digit'});
+function renderProjectTools(entry) {
+  document.body.toggleAttribute('data-archived',!!entry.archived);
+  el('receipt-back').textContent = entry.archived ? '← Volver al archivo' : '← Volver a solicitudes';
+  el('source-label').textContent = [entry.archived ? 'Proyecto archivado' : '',entry.source || 'Consulta web'].filter(Boolean).join(' · ');
+  const history = entry.events || [];
+  const rows = history.slice().reverse().map(e=>{
+    const row=node('li');row.append(node('strong',e.actor+' · '+eventDate.format(new Date(e.at))),node('p',e.text));return row;
+  });
+  el('events').replaceChildren(...(rows.length ? rows : [node('li','Los próximos cambios se registrarán aquí.')]));
+  el('project-log').querySelector('summary').textContent = history.length ? 'Historial del proyecto · '+history.length : 'Historial del proyecto';
+  el('project-log').open = !!history.length;
+  el('archive-project').textContent = entry.archived ? 'Reactivar proyecto' : 'Guardar en proyectos pasados';
+}
+el('archive-project').onclick = async event=>{
+  const btn = event.currentTarget;
+  if (btn.disabled || !teamSession()) return;
+  btn.disabled=true;
+  try {
+    const updated=await requests.archive(currentEntry.id,!currentEntry.archived);
+    if(updated.archived) {el('archive-search').value='';await openDesk('archive');}
+    else await openInbox(true,true,updated.id);
+  } catch {storageError('No se pudo actualizar el archivo del proyecto.');}
+  finally {btn.disabled=false;}
+};
+let archiveEntries=[];
+function projectRow(entry) {
+  const button=action('', 'archive-row',()=>entry.archived ? openReceipt(entry.id) : visitEntry(entry));
+  button.append(node('strong',entry.piece),node('small',[reference(entry.id),entry.contact,entry.archived?'Archivado':states[entry.state]].join(' · ')));
+  return button;
+}
+function renderArchive() {
+  const q=searchKey(el('archive-search').value);
+  const matches=archiveEntries.filter(e=>searchKey([e.piece,e.contact,e.phone,e.email,reference(e.id)].join(' ')).includes(q) || phoneMatches(e.phone,q));
+  el('archive-list').replaceChildren(...(matches.length ? matches.map(projectRow) : [node('p','Sin proyectos archivados para esta búsqueda.')]));
+}
+el('archive-search').oninput=renderArchive;
+function showContactProjects(contact) {
+  el('contact-projects')?.remove();
+  const section=node('section');section.id='contact-projects';
+  const heading=node('h2','Proyectos de '+contact.name);heading.tabIndex=-1;
+  section.append(heading,...contact.entries.map(projectRow));el('contacts').append(section);heading.focus();
+}
+
 if (serverMode) {
   document.querySelector('.demo-inner > span').textContent = 'Gestión local · datos de ejemplo';
   document.querySelector('.footer p').textContent = 'Muestra gratuita · Pedidos guardados en esta computadora.';

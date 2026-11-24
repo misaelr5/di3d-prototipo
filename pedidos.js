@@ -35,7 +35,7 @@ const browserRequests = (() => {
   function open() {
     if (!connection) {
       connection = new Promise((resolve, reject) => {
-        const request = indexedDB.open('di3d-cotizaciones-demo', 4);
+        const request = indexedDB.open('di3d-cotizaciones-demo', 5);
         request.onupgradeneeded = (event) => {
           const initialTracking = { state: 'missing', note: 'Confirmar la escala de la maqueta antes de cotizar' };
           const store = event.oldVersion === 0
@@ -66,16 +66,30 @@ const browserRequests = (() => {
               quantity: '30', use: 'Organizadores de escritorio para un encuentro de empresas.', contact: 'Ana Silva',
               email: 'ana@example.com', createdAt: '2026-11-21T12:00:00-03:00', state: 'quoted', note: 'Se preparó la cotización por 30 organizadores.' });
           }
-          store.add({ ...common, state: 'review', service: 'Premios y reconocimientos',
-            piece: 'Trofeos para el torneo de clubes', mockup: 'Trofeos para un evento', quantity: '16',
-            use: 'Premiar a los equipos finalistas.', contact: 'Paula Ríos', email: 'paula@example.com',
-            owner: 'Diseño', note: 'Revisar la legibilidad de los nombres en la base antes de cotizar.',
-            createdAt: '2026-11-23T10:00:00-03:00' });
-          store.add({ ...common, state: 'review', service: 'Regalos corporativos',
-            piece: 'Organizadores para un kit de bienvenida', mockup: 'Regalos empresariales', quantity: '20',
-            use: 'Armar kits de escritorio para nuevas incorporaciones.', contact: 'Diego Vera', email: 'diego@example.com',
-            owner: 'Producción', note: 'Revisar el tiempo de impresión del lote de 20 unidades.',
-            createdAt: '2026-11-22T10:00:00-03:00' });
+          if (event.oldVersion < 4) {
+            store.add({ ...common, state: 'review', service: 'Premios y reconocimientos',
+              piece: 'Trofeos para el torneo de clubes', mockup: 'Trofeos para un evento', quantity: '16',
+              use: 'Premiar a los equipos finalistas.', contact: 'Paula Ríos', email: 'paula@example.com',
+              owner: 'Diseño', note: 'Revisar la legibilidad de los nombres en la base antes de cotizar.',
+              createdAt: '2026-11-23T10:00:00-03:00' });
+            store.add({ ...common, state: 'review', service: 'Regalos corporativos',
+              piece: 'Organizadores para un kit de bienvenida', mockup: 'Regalos empresariales', quantity: '20',
+              use: 'Armar kits de escritorio para nuevas incorporaciones.', contact: 'Diego Vera', email: 'diego@example.com',
+              owner: 'Producción', note: 'Revisar el tiempo de impresión del lote de 20 unidades.',
+              createdAt: '2026-11-22T10:00:00-03:00' });
+          }
+          const createdAt = '2026-11-20T12:10:00Z';
+          const events = [{ at: createdAt, actor: 'Sofía', text: 'Cargó la consulta de WhatsApp.' },
+            { at: '2026-11-20T13:35:00Z', actor: 'Nicolás', text: 'Estado: Nueva → En revisión. Responsable: Producción.' }];
+          const kit = { ...common, source: 'WhatsApp', piece: 'Organizadores para recepción', quantity:'18',
+            service:'Regalos corporativos', mockup:'Regalos empresariales', contact:'Estudio Sur', email:'', phone:'000 555 0142',
+            use:'Hola, necesitamos 18 organizadores para recepción. ¿Podrían cotizarlos?', owner:'Producción',
+            createdAt, state:'review', note:'Verificar el acabado antes de cotizar.', events };
+          store.add(kit);
+          store.add({ ...kit, piece:'Organizadores para oficinas', quantity:'10', use:'Pedido anterior de 10 organizadores.',
+            state:'quoted', archived:true, note:'Trabajo finalizado.', offer:{ number:'COT-018', date:'2026-11-21' },
+            events:[...events,{ at:'2026-11-21T15:00:00Z',actor:'Nicolás',text:'Registró la cotización COT-018.' },
+            { at:'2026-11-23T17:40:00Z',actor:'Sofía',text:'Archivó el proyecto.' }] });
         };
         request.onsuccess = () => {
           request.result.onversionchange = () => { request.result.close(); connection = undefined; };
@@ -102,13 +116,28 @@ const browserRequests = (() => {
     });
   }
 
-  function modify(id, change) {
+  function modify(id, change, action, asClient = false) {
+    const member = activeMember();
     return transact('readwrite', (store, done) => {
       const request = store.get(id);
       request.onsuccess = () => {
         if (!request.result) return;
         const updated = change(request.result);
         if (!updated) return;
+        const before = request.result;
+        const details = [];
+        const fields = {piece:'Proyecto',contact:'Cliente',quantity:'Cantidad',phone:'Teléfono',email:'Correo',
+          material:'Material',dimensions:'Medidas',service:'Servicio',use:'Descripción',state:'Estado',owner:'Responsable',note:'Nota',reviewDate:'Próxima revisión'};
+        for (const [key,label] of Object.entries(fields)) {
+          const previous = before[key] || '';
+          const next = updated[key] || '';
+          if (previous !== next) details.push(label + ': ' + (key === 'state' ? states[previous] : previous || '—') + ' → ' + (key === 'state' ? states[next] : next || '—'));
+        }
+        if (before.attachment !== updated.attachment) details.push('Archivo: ' + (before.attachment?.name || '—') + ' → ' + (updated.attachment?.name || '—'));
+        if (action || details.length) {
+          const text = [action, ...details].filter(Boolean).join(' · ');
+          updated.events = [...(before.events || []), { at:new Date().toISOString(), actor:asClient ? before.contact : member, text }];
+        }
         store.put(updated);
         done(updated);
       };
@@ -125,24 +154,29 @@ const browserRequests = (() => {
       request.onsuccess = () => done(request.result);
     }),
     add: (data) => transact('readwrite', (store, done) => {
-      const request = store.add({ ...data, createdAt: new Date().toISOString(), state: 'new', note: '' });
+      const createdAt = new Date().toISOString();
+      const internal = data.source === 'WhatsApp';
+      const events = [{at:createdAt, actor:internal ? activeMember() : data.contact, text:internal ? 'Cargó la consulta de WhatsApp.' : 'Registró la solicitud.'}];
+      const request = store.add({ ...data, createdAt, events, state: 'new', note: '' });
       request.onsuccess = () => done(request.result);
     }),
+    edit: (id, fields) => modify(id, entry => ({ ...entry, ...fields })),
+    archive: (id, archived) => modify(id, entry => ({ ...entry, archived }), archived ? 'Archivó el proyecto.' : 'Reactivó el proyecto.'),
     update: (id, state, note, owner, reviewDate) => modify(id, entry => ({ ...entry, state, note, owner, reviewDate, responseAfterQuote: false })),
     quote: (id, number, date, file) => modify(id, entry => ({
       ...entry, state: 'quoted', responseAfterQuote: false, offer: { number, date, file: file ?? entry.offer?.file ?? null }
-    })),
+    }), 'Registró la cotización ' + number + ' del ' + date + (file ? ' con PDF ' + file.name : '') + '.'),
     ask: (id, question) => modify(id, entry => {
       const thread = entry.clarifications ?? [];
       if (!question || thread.some(item => !item.answer)) return;
       return { ...entry, state: entry.state === 'quoted' ? 'quoted' : 'missing', clarifications: [...thread, { question, askedAt: new Date().toISOString() }] };
-    }),
+    }, 'Pidió aclaración: ' + question),
     answer: (id, index, answer) => modify(id, entry => {
       const thread = [...(entry.clarifications ?? [])];
       if (!answer || !thread[index] || thread[index].answer) return;
       thread[index] = { ...thread[index], answer, author: entry.contact, answeredAt: new Date().toISOString() };
       const quoted = entry.state === 'quoted';
       return { ...entry, state: quoted ? 'quoted' : 'review', responseAfterQuote: quoted, clarifications: thread };
-    })
+    }, 'Respondió: ' + answer, true)
   };
 })();

@@ -1,7 +1,7 @@
-# Sistema de gestión interna para DI3D
+# Gestión interna del taller DI3D
 
-[Abrir la muestra](https://misaelr5.github.io/di3d-prototipo/) · [Ver el recorrido ilustrado](recorrido.png) · [Diagrama editable](recorrido.excalidraw)
+[Abrir el prototipo](https://misaelr5.github.io/di3d-prototipo/) · [Recorrido ilustrado](recorrido.png) · [Excalidraw editable](recorrido.excalidraw)
 
-Entrá al panel con la clave de muestra precargada. En el resumen se ven los pedidos del taller. Desde Seguimiento podés abrir una ficha, asignarle responsable y fecha de revisión, guardar una nota o registrar una cotización.
+Entrá con la clave de muestra precargada y tocá **Cargar consulta de WhatsApp → Usar un mensaje de ejemplo**. Guardá el proyecto y elegí otro integrante de muestra. Al editar la cantidad o el seguimiento, el historial registra el cambio, quién lo hizo y cuándo. Podés archivar el proyecto, buscarlo por cliente o teléfono y reactivarlo.
 
-Muestra estática de Reac Studio con datos ficticios. Cada navegador usa su propia base IndexedDB. El acceso al panel simula el cambio de rol. Usar sólo datos de ejemplo. GitHub Pages publica los archivos de la raíz de main.
+Los integrantes y trabajos son ficticios. La carga desde WhatsApp es manual. IndexedDB conserva los datos en el navegador de la demo. El acceso y los cambios de integrante simulan el trabajo de un equipo. GitHub Pages sirve la muestra desde la raíz de main.
