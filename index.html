@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
   <meta name="robots" content="noindex,nofollow">
-  <title>Prototipo DI3D | De la consulta a la cotización</title>
+  <title>Prototipo DI3D | Sistema de gestión interna</title>
   <link rel="stylesheet" href="tipografia/manrope.css">
   <link rel="stylesheet" href="estilos.css">
   <link rel="stylesheet" href="panel.css">
@@ -18,7 +18,7 @@
 <body>
   <aside class="demo-bar" aria-label="Controles de presentación">
     <div class="shell demo-inner">
-      <span>Prototipo DI3D · Datos ficticios</span>
+      <span>Gestión interna DI3D · Datos de muestra</span>
       <div class="role-switch" role="group" aria-label="Vista de la muestra">
         <button type="button" id="client-view" aria-pressed="true">Vista del cliente</button>
         <button type="button" id="team-view" aria-pressed="false">Vista del equipo</button>
@@ -47,7 +47,7 @@
     <noscript><p>Activá JavaScript para probar la muestra local.</p></noscript>
     <p class="error banner" id="storage-error" role="alert" hidden></p>
     <section id="login" class="login" aria-labelledby="login-title" hidden>
-      <div class="login-art"><span>DI3D / Equipo</span><img src="perilla-volumen.webp" alt="Ilustración en volumen de la perilla de ensayo"><strong>Gestión del taller</strong></div>
+      <div class="login-art"><img class="login-logo" src="di3d-blanco.png" alt="DI3D"><strong>Gestión del taller</strong><p>Pedidos, responsables y cotizaciones del equipo de impresión 3D.</p></div>
       <form id="login-form">
         <img src="iconos-tabler/lock.svg" width="30" height="30" alt="">
         <h1 id="login-title" tabindex="-1">Acceso del equipo</h1>
@@ -55,7 +55,7 @@
         <div class="field"><label for="team-pass">Contraseña</label><input id="team-pass" type="password" autocomplete="off" required aria-describedby="login-error"></div>
         <p class="error" id="login-error" role="alert" hidden></p>
         <button type="submit" class="button primary">Entrar al panel →</button>
-        <button type="button" class="text-button" id="cancel-login">Volver al sitio</button>
+        <button type="button" class="text-button" id="cancel-login" hidden>Volver al sitio</button>
       </form>
     </section>
     <section id="overview" aria-labelledby="overview-title" class="desk-view" hidden>

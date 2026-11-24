@@ -582,7 +582,7 @@ el('reply-form').addEventListener('submit', async event => {
 function initializeDemo() {
 const replyLink = /^#cliente\/(\d+)\/(\d+)(?:~([\w-]+))?$/.exec(location.hash);
 const confirmationLink = /^#cliente\/pedido\/(\d+)(?:~([\w-]+))?$/.exec(location.hash);
-if (location.hash.startsWith('#equipo')) navigateTeam(location.hash, false);
+if (!location.hash || location.hash.startsWith('#equipo')) navigateTeam(location.hash || '#equipo', false);
 else if (replyLink) openReply(Number(replyLink[1]), Number(replyLink[2]) - 1, replyLink[3]);
 else if (confirmationLink) {
   receiptToken = confirmationLink[2] || '';

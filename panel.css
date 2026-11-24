@@ -205,3 +205,13 @@ body[data-team] { background:#fff; }
 }
 #guide-question,#late-answer { margin:10px 0; }
 #late-answer { padding:10px 14px; background:#fff4dc; border-left:3px solid #e4a026; }
+
+body:is([data-team],[data-view=login]) .role-switch { display:none; }
+.login-art .login-logo { display:block; width:58px; height:auto; margin:0 0 30px; }
+.login-art p { color:#eef0ea; max-width:27ch; margin-top:10px; }
+@media(max-width:650px) {
+ .login-art { display:grid; grid-template-columns:auto 1fr; gap:2px 14px; padding:18px; }
+ .login-art .login-logo { grid-row:span 2; width:42px; margin:0; }
+ .login-art p { margin:0; font-size:13px; }
+}
+body[data-view=login] .masthead { display:none; }
