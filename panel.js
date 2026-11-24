@@ -182,9 +182,12 @@ function renderOverview(entries) {
       node('p', nextTask(featured), 'spot-pending'),
       action('Abrir ficha →','button primary',()=>visitEntry(featured)));
     spot.append(info);
-    if (featured.attachment?.model === 'local') {
-      const image=node('img',null,'spot-art'); image.src='maqueta-volumen.svg'; image.alt='Ilustración de la maqueta del local'; spot.append(image);
-
+    const mockup = mockupFor(featured);
+    if (mockup) {
+      const image = node('img', null, 'spot-art');
+      image.src = mockup.image;
+      image.alt = mockup.alt;
+      spot.append(image);
     }
   } else spot.append(node('h2','Todos los pedidos están al día.'));
   const tasks = pending.slice(0,3).map(entry => {
@@ -196,8 +199,17 @@ function renderOverview(entries) {
   const rows = entries.slice(0,6).map(entry=>{
     const button=action('','recent-row',()=>visitEntry(entry));
     const title=node('span',null,'recent-piece');
-    title.append(node('strong',entry.piece),node('small',entry.service || 'Consulta general'));
-    button.append(node('span',reference(entry.id),'ref'), title,node('span',entry.contact,'recent-contact'),stateBadge(entry.state),icon('arrow-up-right'));
+    const mockup = mockupFor(entry);
+    if (mockup) {
+      const thumbnail = node('img', null, 'order-thumbnail');
+      thumbnail.src = mockup.image;
+      thumbnail.alt = '';
+      title.append(thumbnail);
+    }
+    const description = node('span');
+    description.append(node('strong',entry.piece),node('small',reference(entry.id)));
+    title.append(description);
+    button.append(title,stateBadge(entry.state),icon('arrow-up-right'));
     return button;
   });
   el('recent-list').replaceChildren(...rows);

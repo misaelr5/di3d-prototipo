@@ -358,6 +358,17 @@ function renderReceipt(entry) {
   el('name-output').textContent = entry.contact;
   el('email-output').textContent = entry.email;
   paintAttachment(el('receipt-file'), entry.attachment, el('download-file'));
+  const mockup = mockupFor(entry);
+  const figure = el('order-mockup');
+  figure.hidden = !mockup;
+  const image = figure.querySelector('img');
+  if (mockup) {
+    image.src = mockup.image;
+    image.alt = mockup.alt;
+  } else image.removeAttribute('src');
+  const attachmentPanel = el('order-reference');
+  attachmentPanel.hidden = !entry.attachment;
+  attachmentPanel.open = !mockup;
   renderExchange(entry);
   displayOffer(entry);
   statusInput.value = entry.state;

@@ -18,6 +18,17 @@ const exampleRequest = Object.freeze({
   attachment: exampleAttachment
 });
 
+const sampleMockups = {
+  'Maqueta de un local comercial': { image:'mockups/local.webp', alt:'Maqueta arquitectónica con vidriera y toldo ámbar' },
+  'Trofeos para un evento': { image:'mockups/trofeo.webp', alt:'Trofeo geométrico dorado sobre una base oscura' },
+  'Regalos empresariales': { image:'mockups/organizador.webp', alt:'Organizador de escritorio con portalápices y bandeja' }
+};
+function mockupFor(entry) {
+  if (entry.attachment?.model === 'local') return sampleMockups[exampleRequest.piece];
+  if (!entry.sample || !Object.hasOwn(sampleMockups, entry.piece)) return null;
+  return sampleMockups[entry.piece];
+}
+
 const browserRequests = (() => {
   const storeName = 'solicitudes';
   let connection;
