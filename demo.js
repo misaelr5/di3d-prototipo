@@ -11,7 +11,7 @@ const noteInput = el('internal-note');
 const screens = {
   home: el('home'), form: el('edit-view'), confirmation: el('confirmation'),
   inbox: el('inbox'), receipt: el('receipt'), reply: el('clarification-view'),
-  archive: el('archive'), login: el('login'), overview: el('overview'), board: el('board'), contacts: el('contacts')
+  finance: el('finance'), archive: el('archive'), login: el('login'), overview: el('overview'), board: el('board'), contacts: el('contacts')
 };
 const dateFormat = new Intl.DateTimeFormat('es-AR', { day: 'numeric', month: 'short', year: 'numeric' });
 const imageTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif', 'image/bmp'];

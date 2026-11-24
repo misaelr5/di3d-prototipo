@@ -1,6 +1,6 @@
 'use strict';
 
-const deskRoutes = { archive:'#equipo/archivo', overview: '#equipo', inbox: '#equipo/solicitudes', board: '#equipo/seguimiento', contacts: '#equipo/contactos' };
+const deskRoutes = { finance:'#equipo/cobros', archive:'#equipo/archivo', overview: '#equipo', inbox: '#equipo/solicitudes', board: '#equipo/seguimiento', contacts: '#equipo/contactos' };
 const teamHash = (page, id) => page === 'receipt' ? '#equipo/' + id : deskRoutes[page];
 const isTeamScreen = page => page === 'receipt' || Object.hasOwn(deskRoutes, page);
 const sessionKey = 'di3d.equipo.demo';
@@ -262,6 +262,7 @@ async function openDesk(page, focus=true) {
     if (screen!==page || version!==deskVersion) return;
     entries.sort((a,b)=>b.createdAt.localeCompare(a.createdAt) || b.id-a.id);
     storageError('');
+    if (page==='finance') { financeEntries=entries; renderFinance(); }
     if (page==='archive') { archiveEntries = entries.filter(e=>e.archived); renderArchive(); }
     if (page==='overview') renderOverview(entries.filter(e=>!e.archived));
     if (page==='board') renderBoard(entries.filter(e=>!e.archived));
@@ -276,6 +277,7 @@ el('home-panel').addEventListener('click',()=>openDesk('overview'));
 
 let offerUrl = '';
 function displayOffer(entry) {
+  renderPayments(entry);
   const offer = entry.offer;
   if (offerUrl) URL.revokeObjectURL(offerUrl);
   offerUrl = offer?.file ? URL.createObjectURL(offer.file) : '';
@@ -300,6 +302,8 @@ el('edit-offer').addEventListener('click', () => {
   const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0,10);
   el('offer-number').value = offer?.number || '';
   el('offer-date').value = offer?.date || localDate;
+  el('offer-amount').value = offer?.cents ? offer.cents / 100 : '';
+  el('offer-approval').value = offer?.approved ? 'approved' : 'pending';
   el('offer-file').value = '';
   el('offer-existing').textContent = offer?.file ? 'PDF guardado: ' + offer.file.name + '. Podés elegir otro para reemplazarlo.' : '';
   el('offer-form').hidden = false;
@@ -324,9 +328,9 @@ el('offer-form').addEventListener('submit', async event => {
   }
   save.disabled = true;
   try {
-    const entry = await requests.quote(id,number,el('offer-date').value,file);
+    const entry = await requests.quote(id,number,el('offer-date').value,file,Math.round(el('offer-amount').valueAsNumber*100),el('offer-approval').value==='approved');
     if (screen !== 'receipt' || selectedId !== id) return;
-    if (!entry) throw new Error();
+    if (!entry) { el('offer-result').textContent='Revisá el importe y la aprobación: deben respetar los cobros vigentes.'; return; }
     renderReceipt(entry);
     if (statusFilter.value && statusFilter.value !== 'quoted') statusFilter.value = '';
     await renderInbox();
@@ -415,7 +419,7 @@ el('archive-project').onclick = async event=>{
 let archiveEntries=[];
 function projectRow(entry) {
   const button=action('', 'archive-row',()=>entry.archived ? openReceipt(entry.id) : visitEntry(entry));
-  button.append(node('strong',entry.piece),node('small',[reference(entry.id),entry.contact,entry.archived?'Archivado':states[entry.state]].join(' · ')));
+  button.append(node('strong',entry.piece),node('small',[reference(entry.id),entry.contact,entry.archived?'Archivado':states[entry.state],entry.offer?.approved?'Saldo '+money(outstanding(entry)):''].filter(Boolean).join(' · ')));
   return button;
 }
 function renderArchive() {
@@ -430,6 +434,102 @@ function showContactProjects(contact) {
   const heading=node('h2','Proyectos de '+contact.name);heading.tabIndex=-1;
   section.append(heading,...contact.entries.map(projectRow));el('contacts').append(section);heading.focus();
 }
+
+let financeEntries = [];
+let financeFilter = 'balance';
+const financeLabels = {pending:'Pendiente de aprobación',balance:'Aprobado por cobrar',received:'Cobrado en el período'};
+function receivedInPeriod(entry) {
+  const period = el('finance-period').value;
+  const now = new Date();
+  const month = localDay(new Date(now.getFullYear(),now.getMonth() - (period==='previous' ? 1 : 0),1)).slice(0,7);
+  return (entry.payments || []).reduce((sum,p)=>sum + (!p.voided && (period==='all' || p.date.startsWith(month)) ? p.cents : 0),0);
+}
+function financeAmount(entry, category) {
+  if (category==='received') return receivedInPeriod(entry);
+  if (category==='balance') return outstanding(entry);
+  return !entry.offer?.approved ? entry.offer?.cents || 0 : 0;
+}
+async function openFinancialProject(entry) {
+  if (entry.archived) await openReceipt(entry.id);
+  else await visitEntry(entry);
+  if (currentEntry?.id===entry.id && screen==='receipt') el('quote-record-title').focus();
+}
+function renderFinance() {
+  const cards=Object.entries(financeLabels).map(([key,label])=>{
+    const button=action('', 'finance-metric', ()=>{
+      financeFilter=key;renderFinance();el('finance-metrics').querySelector('[aria-pressed=true]').focus();
+    });
+    button.setAttribute('aria-pressed',String(financeFilter===key));
+    button.append(node('span',label),node('strong',money(financeEntries.reduce((sum,e)=>sum+financeAmount(e,key),0))));
+    return button;
+  });
+  el('finance-metrics').replaceChildren(...cards);
+  el('finance-detail').textContent=financeLabels[financeFilter];
+  const rows=financeEntries.filter(e=>financeAmount(e,financeFilter)>0).map(e=>{
+    const button=action('','finance-row',()=>openFinancialProject(e));
+    const description=node('span');
+    description.append(node('strong',e.piece),node('small',[e.contact,e.offer.number,e.archived?'Archivado':''].filter(Boolean).join(' · ')));
+    button.append(description,node('strong',money(financeAmount(e,financeFilter))));return button;
+  });
+  el('finance-rows').replaceChildren(...(rows.length ? rows : [node('p','Sin proyectos con importes en esta selección.')]));
+}
+el('quote-record-title').tabIndex=-1;
+el('finance-period').onchange=()=>{financeFilter='received';renderFinance();};
+
+let voidPaymentId;
+const payDialog=el('payment-dialog');
+function editPayment(payment) {
+  voidPaymentId=payment?.id;
+  el('payment-form').reset();
+  message(el('payment-error'));
+  el('payment-title').textContent=payment?'Anular cobro':'Registrar cobro';
+  el('payment-balance').textContent=payment?'Movimiento de '+money(payment.cents)+' del '+shortDay(payment.date):'Saldo disponible: '+money(outstanding(currentEntry));
+  el('payment-fields').hidden=!!payment;
+  el('void-label').hidden=!payment;
+  el('void-reason').required=!!payment;
+  el('payment-amount').required=!payment;
+  el('payment-date').required=!payment;
+  el('payment-amount').max=outstanding(currentEntry)/100;
+  el('payment-date').value=localDay();
+  el('payment-date').max=localDay();
+  payDialog.showModal();
+}
+function renderPayments(entry) {
+  const offer=entry.offer;
+  el('payment-record').hidden=!offer;
+  if (!offer) return;
+  const known=validCents(offer.cents);
+  el('payment-summary').textContent=!known?'Importe pendiente de carga. Editá la cotización para incluirla en los totales.':
+    offer.approved?'Aprobado '+money(offer.cents)+' · Cobrado '+money(paidCents(entry))+' · Saldo '+money(outstanding(entry)):
+    'Pendiente de aprobación · '+money(offer.cents);
+  el('add-payment').hidden=!offer.approved || outstanding(entry)<=0;
+  const rows=[...(entry.payments || [])].reverse().map(p=>{
+    const row=node('div',null,'payment-row');
+    row.append(node('span',shortDay(p.date)+' · '+money(p.cents)+' · '+p.actor));
+    if (p.voided) row.append(node('small','Anulado por '+p.voided.actor+' · '+p.voided.reason));
+    else row.append(action('Anular','text-button',()=>editPayment(p)));
+    return row;
+  });
+  el('payment-list').replaceChildren(...rows);
+}
+el('add-payment').onclick=()=>editPayment();
+el('cancel-payment').onclick=()=>payDialog.close();
+el('payment-form').onsubmit=async e=>{
+  e.preventDefault();
+  const save=e.currentTarget.querySelector('[type=submit]');
+  if(save.disabled || !teamSession()) return;
+  save.disabled=true;
+  try {
+    const id=currentEntry.id;
+    const updated=voidPaymentId ? await requests.voidPayment(id,voidPaymentId,el('void-reason').value) :
+      await requests.collect(id,Math.round(el('payment-amount').valueAsNumber*100),el('payment-date').value);
+    if (!updated) {message(el('payment-error'),'Revisá el saldo disponible, la fecha o el motivo de anulación.');return;}
+    payDialog.close();renderReceipt(updated);
+    el('offer-result').textContent=voidPaymentId?'Cobro anulado.':'Cobro registrado.';
+    el('quote-record-title').focus();
+  } catch { message(el('payment-error'),'No se pudo guardar el movimiento.'); }
+  finally {save.disabled=false;}
+};
 
 if (serverMode) {
   document.querySelector('.demo-inner > span').textContent = 'Gestión local · datos de ejemplo';

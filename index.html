@@ -33,6 +33,7 @@
       <button type="button" data-section="inbox"><img src="iconos-tabler/inbox.svg" alt="">Solicitudes</button>
       <button type="button" data-section="board"><img src="iconos-tabler/layout-kanban.svg" alt="">Seguimiento</button>
       <button type="button" data-section="contacts"><img src="iconos-tabler/users.svg" alt="">Contactos</button>
+      <button type="button" data-section="finance"><img src="iconos-tabler/circle-check.svg" alt="">Presupuestos y cobros</button>
       <button type="button" data-section="archive"><img src="iconos-tabler/inbox.svg" alt="">Archivo</button>
     </nav>
     <button type="button" id="logout"><img src="iconos-tabler/logout.svg" alt="">Cerrar sesión</button>
@@ -73,6 +74,12 @@
         <section class="recent"><header><h2>Últimas solicitudes</h2><button type="button" class="text-button" data-go="inbox">Ver todas →</button></header><div id="recent-list"></div></section>
         <section class="task-box"><h2>Para atender</h2><div id="task-list"></div></section>
       </div>
+    </section>
+    <section id="finance" class="desk-view" aria-labelledby="finance-title" hidden>
+      <header class="desk-head"><div><p class="desk-kicker">Administración · ARS</p><h1 id="finance-title" tabindex="-1">Presupuestos y cobros</h1></div></header>
+      <div class="finance-metrics" id="finance-metrics" role="group" aria-label="Ver proyectos por importe"></div>
+      <div class="finance-head"><h2 id="finance-detail"></h2><label>Período de cobros <select id="finance-period"><option value="month">Este mes</option><option value="previous">Mes anterior</option><option value="all">Todo el historial</option></select></label></div>
+      <div id="finance-rows"></div>
     </section>
     <section id="archive" class="desk-view" aria-labelledby="archive-title" hidden>
       <header class="desk-head"><h1 id="archive-title" tabindex="-1">Proyectos pasados</h1></header>
@@ -316,10 +323,16 @@
             <form id="offer-form" hidden>
               <div class="plan-fields"><div class="field"><label for="offer-number">Número de cotización</label><input id="offer-number" maxlength="80" required></div>
               <div class="field"><label for="offer-date">Fecha de cotización</label><input type="date" id="offer-date" required max="9999-12-31"></div></div>
+              <div class="plan-fields"><label>Importe en pesos<input id="offer-amount" type="number" required min="0.01" max="9999999999.99" step=".01"></label><label>Estado del presupuesto<select id="offer-approval"><option value="pending">Pendiente de aprobación</option><option value="approved">Aprobado</option></select></label></div>
               <div class="field"><label for="offer-file">PDF de la cotización <span>(opcional, hasta 15 MB)</span></label><input type="file" accept=".pdf,application/pdf" id="offer-file"></div>
               <p id="offer-existing" class="small muted"></p>
               <div class="form-actions"><button class="button primary" type="submit" id="save-offer">Guardar como cotizada</button> <button type="button" class="text-button" id="cancel-offer">Cancelar</button></div>
             </form>
+            <section id="payment-record" hidden>
+              <h3>Presupuesto y cobros</h3><p id="payment-summary"></p>
+              <button type="button" class="button primary" id="add-payment">Registrar cobro</button>
+              <div id="payment-list"></div>
+            </section>
             <p id="offer-result" role="status" class="small"></p>
           </section>
         </div>
@@ -327,6 +340,12 @@
     </section>
     </div>
   </main>
+  <dialog id="payment-dialog" aria-labelledby="payment-title"><form id="payment-form">
+    <h2 id="payment-title">Registrar cobro</h2><p id="payment-balance"></p>
+    <div id="payment-fields"><label>Importe en pesos<input id="payment-amount" type="number" step=".01" min=".01"></label><label>Fecha del cobro<input type="date" id="payment-date"></label></div>
+    <label id="void-label" hidden>Motivo de anulación<input id="void-reason" maxlength="200"></label>
+    <p id="payment-error" role="alert" hidden></p><div class="form-actions"><button class="button primary" type="submit">Confirmar</button><button type="button" class="text-button" id="cancel-payment">Cancelar</button></div>
+  </form></dialog>
   <dialog id="project-dialog" aria-labelledby="project-dialog-title">
     <form id="project-editor">
       <h2 id="project-dialog-title">Cargar consulta de WhatsApp</h2>

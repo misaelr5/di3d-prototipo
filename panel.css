@@ -246,3 +246,22 @@ body[data-view=receipt][data-archived] #inbox {display:none}
 body[data-view=receipt][data-archived] .workspace {display:block}
 @media(max-width:900px){.rail nav {grid-template-columns:repeat(5,minmax(0,1fr))}}
 @media(max-width:650px){#member-label{font-size:12px}body[data-team] .masthead-inner{gap:6px;flex-wrap:wrap}.rail nav button{font-size:11px}}
+.finance-metrics {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.finance-metric {padding:18px;text-align:left;background:#fafaf7;color:var(--ink);border:1px solid var(--line);border-radius:9px}
+.finance-metric[aria-pressed=true] {background:#fff3ce;border-color:#ab822d}
+.finance-metric strong,.finance-row small {display:block}
+.finance-metric strong {font-size:clamp(22px,2.5vw,36px);margin-top:8px}
+.finance-head,.finance-row,.payment-row {display:flex;justify-content:space-between;align-items:center;gap:12px}
+.finance-head {margin:24px 0 10px;flex-wrap:wrap}
+.finance-head select {width:auto}
+.finance-row {width:100%;padding:14px 4px;background:white;border:0;border-top:1px solid var(--line);text-align:left;color:var(--ink)}
+.finance-row:hover {background:#fff7df}
+.finance-row small {margin-top:3px;color:var(--muted)}
+#payment-record {margin:14px 0;padding:14px;border:1px solid var(--line);border-radius:8px}
+#payment-summary {margin:8px 0 12px}
+.payment-row {border-top:1px solid var(--line);margin-top:8px;padding-top:8px;flex-wrap:wrap}
+#payment-dialog {width:min(94vw,430px);border:1px solid var(--line);border-radius:12px;padding:20px}
+#payment-dialog::backdrop {background:#191d1aba}
+#payment-form {display:grid;gap:14px} #payment-form label {display:grid;gap:5px;margin-bottom:8px}
+@media(max-width:900px){.rail nav {grid-template-columns:repeat(6,minmax(0,1fr))}}
+@media(max-width:650px){.rail nav {grid-template-columns:repeat(3,minmax(0,1fr))}.rail nav button{flex-direction:row}.finance-metrics {grid-template-columns:1fr}.finance-metric {display:flex;align-items:center;justify-content:space-between;padding:12px}.finance-metric strong{margin:0}}
