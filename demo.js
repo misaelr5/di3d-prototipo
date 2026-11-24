@@ -18,6 +18,7 @@ const imageTypes = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image
 const reference = (id) => 'DI3D-' + String(id).padStart(4, '0');
 
 let screen = 'home';
+let guidedQuote = false;
 let clientScreen = 'home';
 let attachment;
 let selectedId;
@@ -199,8 +200,9 @@ function fieldError(name, text = '') {
 const validated = ['piece', 'quantity', 'contact', 'email'];
 for (const name of validated) el(name).addEventListener('input', () => fieldError(name));
 
-function beginQuote(chosenService) {
+function beginQuote(chosenService, guided = false) {
   if (submitting) return;
+  guidedQuote = guided && !serverMode;
   if (serverMode) receiptToken = crypto.randomUUID();
   form.reset();
   el('spec-options').open = false;
@@ -218,7 +220,18 @@ el('start-general').addEventListener('click', () => beginQuote(''));
 el('form-back').addEventListener('click', () => show('home'));
 el('confirm-back').addEventListener('click', () => show('home'));
 el('home-link').addEventListener('click', () => show('home'));
-el('confirm-panel').addEventListener('click', () => openInbox(true, true, Number(savedReference.slice(5))));
+function setConfirmationMode(guided) {
+  guidedQuote = guided && !serverMode;
+  el('confirm-panel').textContent = guidedQuote ? 'Continuar como equipo DI3D →' : 'Ver este pedido en el panel →';
+}
+el('confirm-panel').addEventListener('click', () => {
+  if (guidedQuote && !serverMode) {
+    try { sessionStorage.setItem(sessionKey, 'abierta'); }
+    catch { return requestLogin(teamHash('receipt', Number(savedReference.slice(5)))); }
+  }
+  return openInbox(true, true, Number(savedReference.slice(5)));
+});
+el('guide-question').addEventListener('click', () => el('question').focus());
 
 function fillExample() {
   for (const key of ['piece', 'service', 'quantity', 'dimensions', 'use', 'material', 'contact', 'email']) {
@@ -234,7 +247,7 @@ el('load-example').addEventListener('click', () => {
   el('piece').focus();
 });
 el('tour').addEventListener('click', () => {
-  beginQuote(prototypeService);
+  beginQuote(prototypeService, true);
   fillExample();
 });
 
@@ -269,7 +282,8 @@ form.addEventListener('submit', async (event) => {
   el('submit-request').disabled = true;
   message(el('quote-error'));
   try {
-    const id = await requests.add(data);
+    const id = await requests.add({ ...data, guided: guidedQuote });
+    setConfirmationMode(guidedQuote);
     savedReference = reference(id);
     el('confirm-reference').textContent = savedReference;
     el('confirm-summary').textContent = data.piece;
@@ -449,6 +463,9 @@ el('follow-up').addEventListener('submit', async (event) => {
 function renderExchange(entry) {
   const thread = entry.clarifications ?? [];
   const latest = thread.at(-1);
+  el('guide-question').hidden = !entry.guided || !!latest || entry.state === 'quoted';
+  el('guide-question').textContent = entry.attachment?.example ? 'Siguiente paso: pedir la medida del eje →' : 'Siguiente paso: pedir una aclaración →';
+  el('late-answer').hidden = !entry.responseAfterQuote;
   const history = el('exchange-history');
   history.replaceChildren();
   for (const item of [...thread].reverse()) {
@@ -572,6 +589,7 @@ else if (confirmationLink) {
   const id = Number(confirmationLink[1]);
   (serverMode ? requests.confirmation(id) : requests.get(id)).then(entry => {
     if (!entry) throw new Error();
+    setConfirmationMode(!!entry.guided);
     savedReference = reference(entry.id);
     el('confirm-reference').textContent = savedReference;
     el('confirm-summary').textContent = entry.piece;

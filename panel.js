@@ -115,6 +115,7 @@ function filteredInbox(state = '', query = '') {
 }
 function visitEntry(entry) { return openInbox(true, true, entry.id); }
 function nextTask(entry) {
+  if (entry.responseAfterQuote) return 'Revisar respuesta posterior a la cotización';
   if (entry.reviewDate) return 'Revisar el ' + shortDay(entry.reviewDate);
   const latest = entry.clarifications?.at(-1);
   if (latest && !latest.answer) return 'Esperando respuesta de ' + entry.contact;
@@ -170,7 +171,7 @@ function renderOverview(entries) {
     button.append(icon(glyph),node('span',label),node('strong',entries.filter(e=>e.state===state).length));
     return button;
   }));
-  const pending = entries.filter(e=>e.state !== 'quoted').sort(byPriority);
+  const pending = entries.filter(e=>e.state !== 'quoted' || e.responseAfterQuote).sort(byPriority);
   const featured = pending[0];
   const spot = el('spotlight');
   spot.replaceChildren();

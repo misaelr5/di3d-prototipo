@@ -203,3 +203,5 @@ body[data-team] { background:#fff; }
  #home-link img,.rail-brand img { height:44px; }
  .rail-brand { gap:8px; }
 }
+#guide-question,#late-answer { margin:10px 0; }
+#late-answer { padding:10px 14px; background:#fff4dc; border-left:3px solid #e4a026; }

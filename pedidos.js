@@ -101,20 +101,21 @@ const browserRequests = (() => {
       const request = store.add({ ...data, createdAt: new Date().toISOString(), state: 'new', note: '' });
       request.onsuccess = () => done(request.result);
     }),
-    update: (id, state, note, owner, reviewDate) => modify(id, entry => ({ ...entry, state, note, owner, reviewDate })),
+    update: (id, state, note, owner, reviewDate) => modify(id, entry => ({ ...entry, state, note, owner, reviewDate, responseAfterQuote: false })),
     quote: (id, number, date, file) => modify(id, entry => ({
-      ...entry, state: 'quoted', offer: { number, date, file: file ?? entry.offer?.file ?? null }
+      ...entry, state: 'quoted', responseAfterQuote: false, offer: { number, date, file: file ?? entry.offer?.file ?? null }
     })),
     ask: (id, question) => modify(id, entry => {
       const thread = entry.clarifications ?? [];
       if (!question || thread.some(item => !item.answer)) return;
-      return { ...entry, state: 'missing', clarifications: [...thread, { question, askedAt: new Date().toISOString() }] };
+      return { ...entry, state: entry.state === 'quoted' ? 'quoted' : 'missing', clarifications: [...thread, { question, askedAt: new Date().toISOString() }] };
     }),
     answer: (id, index, answer) => modify(id, entry => {
       const thread = [...(entry.clarifications ?? [])];
       if (!answer || !thread[index] || thread[index].answer) return;
       thread[index] = { ...thread[index], answer, author: entry.contact, answeredAt: new Date().toISOString() };
-      return { ...entry, state: 'review', clarifications: thread };
+      const quoted = entry.state === 'quoted';
+      return { ...entry, state: quoted ? 'quoted' : 'review', responseAfterQuote: quoted, clarifications: thread };
     })
   };
 })();
