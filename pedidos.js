@@ -25,8 +25,8 @@ const sampleMockups = {
 };
 function mockupFor(entry) {
   if (entry.attachment?.model === 'local') return sampleMockups[exampleRequest.piece];
-  if (!entry.sample || !Object.hasOwn(sampleMockups, entry.piece)) return null;
-  return sampleMockups[entry.piece];
+  const key = entry.mockup || entry.piece;
+  return entry.sample && Object.hasOwn(sampleMockups, key) ? sampleMockups[key] : null;
 }
 
 const browserRequests = (() => {
@@ -35,7 +35,7 @@ const browserRequests = (() => {
   function open() {
     if (!connection) {
       connection = new Promise((resolve, reject) => {
-        const request = indexedDB.open('di3d-cotizaciones-demo', 3);
+        const request = indexedDB.open('di3d-cotizaciones-demo', 4);
         request.onupgradeneeded = (event) => {
           const initialTracking = { state: 'missing', note: 'Confirmar la escala de la maqueta antes de cotizar' };
           const store = event.oldVersion === 0
@@ -43,7 +43,7 @@ const browserRequests = (() => {
             : request.transaction.objectStore(storeName);
           if (event.oldVersion === 0) {
             store.add({ ...exampleRequest, ...initialTracking, sample: true, createdAt: '2026-11-23T12:00:00-03:00' });
-          } else {
+          } else if (event.oldVersion < 3) {
             const existing = store.get(1);
             existing.onsuccess = () => {
               const first = existing.result;
@@ -57,14 +57,25 @@ const browserRequests = (() => {
               store.put(updated);
             };
           }
-          if (event.oldVersion >= 2) return;
           const common = { dimensions: '', guidance: false, material: '', attachment: null, sample: true };
-          store.add({ ...common, service: 'Premios y reconocimientos', piece: 'Trofeos para un evento',
-            quantity: '8', use: 'Entrega de premios al cierre de una jornada.', contact: 'Martín Díaz',
-            email: 'martin@example.com', createdAt: '2026-11-22T12:00:00-03:00', state: 'new', note: '' });
-          store.add({ ...common, service: 'Regalos corporativos', piece: 'Regalos empresariales',
-            quantity: '30', use: 'Organizadores de escritorio para un encuentro de empresas.', contact: 'Ana Silva',
-            email: 'ana@example.com', createdAt: '2026-11-21T12:00:00-03:00', state: 'quoted', note: 'Se preparó la cotización por 30 organizadores.' });
+          if (event.oldVersion < 2) {
+            store.add({ ...common, service: 'Premios y reconocimientos', piece: 'Trofeos para un evento',
+              quantity: '8', use: 'Entrega de premios al cierre de una jornada.', contact: 'Martín Díaz',
+              email: 'martin@example.com', createdAt: '2026-11-22T12:00:00-03:00', state: 'new', note: '' });
+            store.add({ ...common, service: 'Regalos corporativos', piece: 'Regalos empresariales',
+              quantity: '30', use: 'Organizadores de escritorio para un encuentro de empresas.', contact: 'Ana Silva',
+              email: 'ana@example.com', createdAt: '2026-11-21T12:00:00-03:00', state: 'quoted', note: 'Se preparó la cotización por 30 organizadores.' });
+          }
+          store.add({ ...common, state: 'review', service: 'Premios y reconocimientos',
+            piece: 'Trofeos para el torneo de clubes', mockup: 'Trofeos para un evento', quantity: '16',
+            use: 'Premiar a los equipos finalistas.', contact: 'Paula Ríos', email: 'paula@example.com',
+            owner: 'Diseño', note: 'Revisar la legibilidad de los nombres en la base antes de cotizar.',
+            createdAt: '2026-11-23T10:00:00-03:00' });
+          store.add({ ...common, state: 'review', service: 'Regalos corporativos',
+            piece: 'Organizadores para un kit de bienvenida', mockup: 'Regalos empresariales', quantity: '20',
+            use: 'Armar kits de escritorio para nuevas incorporaciones.', contact: 'Diego Vera', email: 'diego@example.com',
+            owner: 'Producción', note: 'Revisar el tiempo de impresión del lote de 20 unidades.',
+            createdAt: '2026-11-22T10:00:00-03:00' });
         };
         request.onsuccess = () => {
           request.result.onversionchange = () => { request.result.close(); connection = undefined; };
