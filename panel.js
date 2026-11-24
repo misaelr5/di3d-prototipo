@@ -192,6 +192,7 @@ function renderBoard(entries) {
   el('board-list').replaceChildren(...Object.entries(states).map(([state,label])=>{
     const items=entries.filter(e=>e.state===state).sort(byPriority);
     const column=node('section',null,'board-column');
+    column.dataset.state = state;
     const heading=node('h2',label); heading.append(node('span',items.length));column.append(heading);
     for (const entry of items) {
       const button=action('','work-order',()=>visitEntry(entry));

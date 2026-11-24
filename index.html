@@ -234,15 +234,15 @@
     <div class="workspace" id="workspace" hidden>
     <section id="inbox" aria-labelledby="inbox-heading" hidden>
       <header class="view-bar inbox-header">
-        <div class="inbox-title"><h2>Pedidos</h2><button type="button" class="button secondary" id="inbox-new">+ Cargar consulta</button></div>
+        <div class="inbox-title"><h2>Pedidos</h2><button type="button" class="button primary" id="inbox-new">+ Cargar consulta</button></div>
         <div class="filter-field">
-          <label for="order-search">Buscar pedido</label><input id="order-search" type="search" placeholder="Proyecto, cliente, teléfono o referencia">
-          <label for="status-filter">Filtrar por estado</label>
-          <select id="status-filter"><option value="">Todos los estados</option></select>
+          <label for="order-search">Buscar pedido</label><input id="order-search" type="search" placeholder="Proyecto, cliente o referencia">
+          <form id="state-filters" aria-label="Filtrar pedidos por estado"></form>
         </div>
       </header>
-      <p class="muted" id="inbox-count" role="status"></p>
+      <div class="orders-head" aria-hidden="true"><span>Proyecto</span><span>Cliente</span><span>Referencia</span><span>Ingreso</span><span>Estado</span></div>
       <ul class="request-list" id="request-list"></ul><button type="button" class="text-button" id="more-orders" hidden>Ver más pedidos</button>
+      <p class="muted" id="inbox-count" role="status"></p>
       <template id="request-row">
         <li><button class="request-row" type="button">
           <span class="row-piece"><strong></strong><span></span></span>

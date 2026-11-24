@@ -5,7 +5,6 @@ const form = el('quote');
 const service = el('service');
 const guidance = el('guidance');
 const fileInput = el('attachment');
-const statusFilter = el('status-filter');
 const statusInput = el('request-status');
 const noteInput = el('internal-note');
 const screens = {
@@ -30,17 +29,26 @@ let visibleEntries = [];
 let currentEntry;
 let replyTarget;
 const scaleQuestion = '¿En qué escala necesitás la maqueta del local?';
-const desktop = matchMedia('(min-width: 901px)');
 const smallDrawing = matchMedia('(max-width: 550px)');
 const sketchPreview = (file) => file + (smallDrawing.matches ? '#movil' : '');
 smallDrawing.addEventListener('change', () => {
   for (const image of document.querySelectorAll('img[data-sketch]')) image.src = sketchPreview(image.dataset.sketch);
 });
 
-for (const [value, label] of Object.entries(states)) {
-  statusFilter.add(new Option(label, value));
-  statusInput.add(new Option(label, value));
+const filterForm = el('state-filters');
+for (const [value, label] of Object.entries({'': 'Todos', ...states})) {
+  const choice = document.createElement('label');
+  choice.dataset.state = value;
+  const radio = document.createElement('input');
+  radio.type = 'radio';
+  radio.name = 'estado';
+  radio.value = value;
+  radio.checked = !value;
+  choice.append(radio, label);
+  filterForm.append(choice);
+  if (value) statusInput.add(new Option(label, value));
 }
+const statusFilter = filterForm.elements.namedItem('estado');
 
 function message(target, text = '') {
   target.textContent = text;
@@ -344,7 +352,7 @@ async function renderInbox() {
     if (screen === 'inbox') storageError('No se pudieron leer las solicitudes de este navegador.');
   }
 }
-statusFilter.addEventListener('change', () => openInbox(false, false));
+filterForm.addEventListener('change', () => openInbox(false, false));
 el('order-search').addEventListener('input', () => openInbox(false, false));
 
 function renderReceipt(entry) {
@@ -408,7 +416,7 @@ async function openInbox(resetFilter = false, focus = true, preferredId) {
   show('inbox', focus);
   const entries = await renderInbox();
   if (version !== detailRender || !entries?.length) return;
-  if (desktop.matches || preferredId) {
+  if (preferredId) {
     const next = entries.find((entry) => entry.id === preferredId) || entries[0];
     await openReceipt(next.id, focus && !!preferredId);
   }
@@ -465,9 +473,7 @@ el('cancel-tracking').addEventListener('click', () => {
   editing(false);
   el('edit-tracking').focus();
 });
-desktop.addEventListener('change', () => {
-  if (desktop.matches && screen === 'inbox' && visibleEntries.length) openReceipt(visibleEntries[0].id, false);
-});
+
 
 el('follow-up').addEventListener('submit', async (event) => {
   event.preventDefault();
