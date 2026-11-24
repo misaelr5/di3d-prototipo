@@ -33,9 +33,11 @@
       <button type="button" data-section="inbox"><img src="iconos-tabler/inbox.svg" alt="">Solicitudes</button>
       <button type="button" data-section="board"><img src="iconos-tabler/layout-kanban.svg" alt="">Seguimiento</button>
       <button type="button" data-section="contacts"><img src="iconos-tabler/users.svg" alt="">Contactos</button>
-      <button type="button" data-section="finance"><img src="iconos-tabler/circle-check.svg" alt="">Presupuestos y cobros</button>
-      <button type="button" data-section="archive"><img src="iconos-tabler/inbox.svg" alt="">Archivo</button>
+      <button type="button" data-section="finance"><img src="iconos-tabler/circle-check.svg" alt=""><span class="nav-long">Presupuestos y cobros</span><span class="nav-short">Cobros</span></button>
+      <button type="button" data-section="archive"><img src="iconos-tabler/archive.svg" alt="">Proyectos pasados</button>
+      <button type="button" id="more-nav" popovertarget="more-sections"><span aria-hidden="true">•••</span>Más</button>
     </nav>
+    <div id="more-sections" popover></div>
     <button type="button" id="logout"><img src="iconos-tabler/logout.svg" alt="">Cerrar sesión</button>
   </aside>
   <header class="masthead">
@@ -49,11 +51,11 @@
     <noscript><p>Activá JavaScript para probar la muestra local.</p></noscript>
     <p class="error banner" id="storage-error" role="alert" hidden></p>
     <section id="login" class="login" aria-labelledby="login-title" hidden>
-      <div class="login-art"><img class="login-logo" src="di3d-blanco.png" alt="DI3D"><strong>Gestión del taller</strong><p>Pedidos, responsables y cotizaciones del equipo de impresión 3D.</p></div>
+      <div class="login-art"><img class="login-logo" src="di3d-blanco.png" alt="DI3D"><strong>Gestión del taller</strong><p>Consultas, trabajos y cobros de DI3D.</p></div>
       <form id="login-form">
         <img src="iconos-tabler/lock.svg" width="30" height="30" alt="">
         <h1 id="login-title" tabindex="-1">Acceso del equipo</h1>
-        <p>La clave de prueba ya está cargada. Tocá «Entrar al panel» para continuar como parte del equipo.</p>
+        <p>La clave de muestra ya está cargada. Entrá para probar el panel.</p>
         <div class="field"><label for="team-pass">Contraseña</label><input id="team-pass" type="password" autocomplete="off" required aria-describedby="login-error"></div>
         <p class="error" id="login-error" role="alert" hidden></p>
         <button type="submit" class="button primary">Entrar al panel →</button>
@@ -64,13 +66,8 @@
       <header class="desk-head"><div><p class="desk-kicker">Operaciones</p><h1 id="overview-title" tabindex="-1">Resumen del taller</h1></div><button type="button" class="button primary" id="new-project">+ Cargar consulta de WhatsApp</button><span id="today" hidden></span></header>
       <div id="metrics" class="metrics" aria-label="Solicitudes por estado"></div>
       <div class="overview-layout">
-        <section class="volume-card"><header><h2>Volumen por servicio</h2>
-          <div class="volume-switch" role="group" aria-label="Medida del gráfico">
-            <button type="button" data-volume="quantity" aria-pressed="true">Unidades</button>
-            <button type="button" data-volume="orders" aria-pressed="false">Solicitudes</button>
-          </div></header><div id="volume-chart" aria-live="polite"></div>
-        </section>
         <article id="spotlight" class="spotlight"></article>
+        <button type="button" id="balance-link" class="balance-link"><span>Saldo por cobrar</span><strong id="overview-balance"></strong><small id="balance-count"></small><span class="balance-action">Ver proyectos pendientes →</span></button>
         <section class="recent"><header><h2>Últimas solicitudes</h2><button type="button" class="text-button" data-go="inbox">Ver todas →</button></header><div id="recent-list"></div></section>
         <section class="task-box"><h2>Para atender</h2><div id="task-list"></div></section>
       </div>
@@ -84,7 +81,7 @@
     <section id="archive" class="desk-view" aria-labelledby="archive-title" hidden>
       <header class="desk-head"><h1 id="archive-title" tabindex="-1">Proyectos pasados</h1></header>
       <label for="archive-search">Buscar por cliente, teléfono, proyecto o referencia</label>
-      <input type="search" id="archive-search"><div id="archive-list"></div>
+      <input type="search" id="archive-search" placeholder="Nombre, teléfono o referencia"><div id="archive-list"></div>
     </section>
     <section id="board" aria-labelledby="board-title" class="desk-view" hidden>
       <header class="desk-head"><div><p class="desk-kicker">Operaciones</p><h1 id="board-title" tabindex="-1">Tablero de seguimiento</h1></div></header>
@@ -93,7 +90,7 @@
     </section>
     <section id="contacts" aria-labelledby="contacts-title" class="desk-view" hidden>
       <header class="desk-head"><div><p class="desk-kicker">Agenda del equipo</p><h1 id="contacts-title" tabindex="-1">Contactos</h1></div></header>
-      <div class="field desk-search"><label for="contact-search">Buscar por nombre, teléfono o correo</label><input type="search" id="contact-search"></div>
+      <div class="field desk-search"><label for="contact-search">Buscar por nombre, teléfono o correo</label><input type="search" id="contact-search" placeholder="Nombre, teléfono o correo"></div>
       <div id="contact-list"></div>
     </section>
 

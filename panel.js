@@ -132,42 +132,11 @@ function byPriority(a,b) {
   const ranks = {missing:0, new:1, review:2, quoted:3};
   return ranks[a.state]-ranks[b.state] || b.id-a.id;
 }
-let volumeMeasure = 'quantity';
-let overviewEntries = [];
-function renderVolumeChart() {
-  const grouped = new Map();
-  for (const entry of overviewEntries) {
-    const service = entry.service || 'Consulta general';
-    const amount = volumeMeasure === 'orders' ? 1 : Number(entry.quantity) || 0;
-    grouped.set(service, (grouped.get(service) || 0) + amount);
-  }
-  const values = [...grouped].sort((a, b) => b[1] - a[1]);
-  const maximum = values[0]?.[1] || 1;
-  const chart = el('volume-chart');
-  chart.replaceChildren();
-  for (const [service, amount] of values) {
-    const row = node('div', null, 'volume-row');
-    const track = node('div', null, 'volume-track');
-    track.setAttribute('aria-hidden', 'true');
-    const bar = node('div', null, 'volume-fill');
-    bar.style.width = (100 * amount / maximum) + '%';
-    track.append(bar);
-    row.append(node('span',service), node('strong',amount.toLocaleString('es-AR')),track);
-    chart.append(row);
-  }
-  if (!values.length) chart.append(node('p','Sin solicitudes para mostrar.'));
-}
-for (const button of document.querySelectorAll('[data-volume]')) {
-  button.addEventListener('click', () => {
-    volumeMeasure = button.dataset.volume;
-    for (const choice of button.parentElement.children) choice.setAttribute('aria-pressed', String(choice === button));
-    renderVolumeChart();
-  });
-}
-
-function renderOverview(entries) {
-  overviewEntries = entries;
-  renderVolumeChart();
+function renderOverview(allEntries) {
+  const entries = allEntries.filter(entry => !entry.archived);
+  const unpaid = allEntries.filter(entry => outstanding(entry) > 0);
+  el('overview-balance').textContent = money(unpaid.reduce((sum, entry) => sum + outstanding(entry), 0));
+  el('balance-count').textContent = unpaid.length === 1 ? '1 proyecto con saldo' : unpaid.length + ' proyectos con saldo';
   el('today').textContent = new Intl.DateTimeFormat('es-AR', { weekday:'long', day:'numeric', month:'long' }).format(new Date());
   const descriptors = [['new','Nuevas','circle-dashed'],['review','En revisión','eye'],['missing','Falta información','message-question'],['quoted','Cotizadas','circle-check']];
   el('metrics').replaceChildren(...descriptors.map(([state,label,glyph]) => {
@@ -212,7 +181,7 @@ function renderOverview(entries) {
       title.append(thumbnail);
     }
     const description = node('span');
-    description.append(node('strong',entry.piece),node('small',reference(entry.id)));
+    description.append(node('strong',entry.piece),node('small',reference(entry.id)+' · '+entry.contact));
     title.append(description);
     button.append(title,stateBadge(entry.state),icon('arrow-up-right'));
     return button;
@@ -264,11 +233,35 @@ async function openDesk(page, focus=true) {
     storageError('');
     if (page==='finance') { financeEntries=entries; renderFinance(); }
     if (page==='archive') { archiveEntries = entries.filter(e=>e.archived); renderArchive(); }
-    if (page==='overview') renderOverview(entries.filter(e=>!e.archived));
+    if (page==='overview') renderOverview(entries);
     if (page==='board') renderBoard(entries.filter(e=>!e.archived));
     if (page==='contacts') { contactEntries=entries; renderContacts(); }
   } catch { if (screen===page) storageError('No se pudieron cargar las solicitudes. Volvé a abrir esta sección.'); }
 }
+el('balance-link').addEventListener('click', () => {
+  financeFilter = 'balance';
+  openDesk('finance');
+});
+
+const compactNav = matchMedia('(max-width: 650px)');
+const moreSections = el('more-sections');
+const sectionNav = el('team-rail').querySelector('nav');
+const extraSections = ['contacts','archive'].map(key => sectionNav.querySelector('[data-section="' + key + '"]'));
+function arrangeNavigation() {
+  if (compactNav.matches) {
+    moreSections.append(...extraSections, el('logout'));
+  } else {
+    if (moreSections.matches(':popover-open')) moreSections.hidePopover();
+    sectionNav.insertBefore(extraSections[0], sectionNav.querySelector('[data-section=finance]'));
+    sectionNav.insertBefore(extraSections[1], el('more-nav'));
+    el('team-rail').append(el('logout'));
+  }
+}
+arrangeNavigation();
+compactNav.addEventListener('change', arrangeNavigation);
+moreSections.addEventListener('click', event => {
+  if (event.target.closest('button') && moreSections.matches(':popover-open')) moreSections.hidePopover();
+});
 for (const link of document.querySelectorAll('[data-section],[data-go]')) {
   link.addEventListener('click',()=>navigateTeam(teamHash(link.dataset.section || link.dataset.go)));
 }
