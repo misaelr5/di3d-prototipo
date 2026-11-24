@@ -234,7 +234,7 @@
     <div class="workspace" id="workspace" hidden>
     <section id="inbox" aria-labelledby="inbox-heading" hidden>
       <header class="view-bar inbox-header">
-        <h2>Bandeja</h2>
+        <div class="inbox-title"><h2>Pedidos</h2><button type="button" class="button secondary" id="inbox-new">+ Cargar consulta</button></div>
         <div class="filter-field">
           <label for="order-search">Buscar pedido</label><input id="order-search" type="search" placeholder="Proyecto, cliente, teléfono o referencia">
           <label for="status-filter">Filtrar por estado</label>
@@ -259,34 +259,29 @@
         <header class="job-head">
           <div class="receipt-meta"><span id="service-output"></span><span id="receipt-status" class="badge"></span></div>
           <h2 id="piece-title" tabindex="-1"></h2>
-          <div class="facts"><strong id="quantity-output"></strong><span id="receipt-material"><span id="material-output"></span></span></div>
+          <div class="facts"><span id="receipt-client"></span><strong id="quantity-output"></strong><span id="receipt-material"><span id="material-output"></span></span></div>
         </header>
         <button id="guide-question" class="button secondary" type="button" hidden></button>
         <p id="late-answer" role="status" hidden>Respuesta nueva del cliente · Cotización ya emitida</p>
-        <section class="project-tools"><div><strong id="source-label"></strong> <button id="change-project" class="text-button">Editar proyecto</button></div>
-          <details id="project-log"><summary>Historial del proyecto</summary><ol id="events"></ol></details>
-          <button class="text-button" id="archive-project"></button>
-        </section>
         <div class="job-grid">
-          <section class="job-reference" aria-labelledby="reference-heading">
-            <h3 id="reference-heading" class="visually-hidden">Referencia del cliente</h3>
-            <figure id="order-mockup" hidden><img alt=""><figcaption>Mockup ilustrativo</figcaption></figure>
-            <details id="order-reference" open><summary>Archivo del pedido</summary>
-            <figure class="attachment" id="receipt-file"><img alt="" hidden><figcaption></figcaption></figure>
-            <a class="text-button download" id="download-file" hidden>Descargar adjunto</a></details>
-          </section>
-          <section class="exchange" aria-labelledby="exchange-heading">
-            <h3 id="exchange-heading">Aclaraciones con el cliente</h3>
-            <div id="exchange-history"></div>
-            <form id="ask-form">
-              <div class="field"><label for="question">¿Qué dato necesitás para cotizar?</label><input id="question" required maxlength="400"></div>
-              <button class="button primary" type="submit" id="ask">Pedir aclaración</button>
+          <section class="quote-record" aria-labelledby="quote-record-title">
+            <header><h3 id="quote-record-title">Presupuesto</h3><button class="text-button" type="button" id="edit-offer">Registrar cotización</button></header>
+            <div id="offer-read" hidden><p id="offer-info"></p><a class="text-button" id="offer-download" hidden>Descargar PDF</a></div>
+            <form id="offer-form" hidden>
+              <div class="plan-fields"><div class="field"><label for="offer-number">Número de cotización</label><input id="offer-number" maxlength="80" required></div>
+              <div class="field"><label for="offer-date">Fecha de cotización</label><input type="date" id="offer-date" required max="9999-12-31"></div></div>
+              <div class="plan-fields"><label>Importe en pesos<input id="offer-amount" type="number" required min="0.01" max="9999999999.99" step=".01"></label><label>Estado del presupuesto<select id="offer-approval"><option value="pending">Pendiente de aprobación</option><option value="approved">Aprobado</option></select></label></div>
+              <div class="field"><label for="offer-file">PDF de la cotización <span>(opcional, hasta 15 MB)</span></label><input type="file" accept=".pdf,application/pdf" id="offer-file"></div>
+              <p id="offer-existing" class="small muted"></p>
+              <div class="form-actions"><button class="button primary" type="submit" id="save-offer">Guardar presupuesto</button> <button type="button" class="text-button" id="cancel-offer">Cancelar</button></div>
             </form>
-            <button class="button primary" type="button" id="open-reply" hidden>Responder como cliente →</button>
-            <button class="text-button" type="button" id="copy-reply" hidden>Copiar enlace local del cliente</button>
-            <p id="copy-result" class="small muted" role="status"></p>
-            <button class="text-button" type="button" id="ask-again" hidden>Pedir otra aclaración</button>
-            <p class="error" role="alert" id="ask-error" hidden></p>
+            <section id="payment-record" hidden>
+              <p id="payment-summary"></p>
+            <button type="button" class="button primary" id="approve-offer" hidden>Registrar aprobación</button>
+              <button type="button" class="button primary" id="add-payment">Registrar cobro</button>
+              <div id="payment-list"></div>
+            </section>
+            <p id="offer-result" role="status" class="small"></p>
           </section>
           <section class="tracking" aria-labelledby="tracking-title">
             <h3 id="tracking-title">Seguimiento interno</h3>
@@ -307,6 +302,20 @@
           </form>
             <p class="small" id="follow-result" role="status"></p>
           </section>
+          <details class="exchange" id="exchange-details">
+            <summary>Aclaraciones con el cliente</summary>
+            <div id="exchange-history"></div>
+            <form id="ask-form">
+              <div class="field"><label for="question">¿Qué dato necesitás para cotizar?</label><input id="question" required maxlength="400"></div>
+              <button class="button primary" type="submit" id="ask">Pedir aclaración</button>
+            </form>
+            <button class="button primary" type="button" id="open-reply" hidden>Responder como cliente →</button>
+            <button class="text-button" type="button" id="copy-reply" hidden>Copiar enlace local del cliente</button>
+            <p id="copy-result" class="small muted" role="status"></p>
+            <button class="text-button" type="button" id="ask-again" hidden>Pedir otra aclaración</button>
+            <p class="error" role="alert" id="ask-error" hidden></p>
+          </details>
+          <details class="project-specs"><summary>Datos, mockup y archivos del pedido</summary>
           <dl class="job-details">
             <div><dt>Pedido</dt><dd><span id="receipt-reference" class="reference-code"></span> · <time id="receipt-date"></time></dd></div>
             <div><dt>Contacto</dt><dd><span id="name-output"></span><span id="email-output" class="email"></span></dd></div>
@@ -314,24 +323,18 @@
             <div id="guidance-output" hidden><dt>Material</dt><dd>El cliente pidió orientación.</dd></div>
             <div id="receipt-dimensions"><dt>Medidas aproximadas</dt><dd id="dimensions-output"></dd></div>
           </dl>
-          <section class="quote-record" aria-labelledby="quote-record-title">
-            <header><h3 id="quote-record-title">Cotización del equipo</h3><button class="text-button" type="button" id="edit-offer">Registrar cotización</button></header>
-            <div id="offer-read" hidden><p id="offer-info"></p><a class="text-button" id="offer-download" hidden>Descargar PDF</a></div>
-            <form id="offer-form" hidden>
-              <div class="plan-fields"><div class="field"><label for="offer-number">Número de cotización</label><input id="offer-number" maxlength="80" required></div>
-              <div class="field"><label for="offer-date">Fecha de cotización</label><input type="date" id="offer-date" required max="9999-12-31"></div></div>
-              <div class="plan-fields"><label>Importe en pesos<input id="offer-amount" type="number" required min="0.01" max="9999999999.99" step=".01"></label><label>Estado del presupuesto<select id="offer-approval"><option value="pending">Pendiente de aprobación</option><option value="approved">Aprobado</option></select></label></div>
-              <div class="field"><label for="offer-file">PDF de la cotización <span>(opcional, hasta 15 MB)</span></label><input type="file" accept=".pdf,application/pdf" id="offer-file"></div>
-              <p id="offer-existing" class="small muted"></p>
-              <div class="form-actions"><button class="button primary" type="submit" id="save-offer">Guardar como cotizada</button> <button type="button" class="text-button" id="cancel-offer">Cancelar</button></div>
-            </form>
-            <section id="payment-record" hidden>
-              <h3>Presupuesto y cobros</h3><p id="payment-summary"></p>
-              <button type="button" class="button primary" id="add-payment">Registrar cobro</button>
-              <div id="payment-list"></div>
-            </section>
-            <p id="offer-result" role="status" class="small"></p>
+          <section class="job-reference" aria-labelledby="reference-heading">
+            <h3 id="reference-heading" class="visually-hidden">Referencia del cliente</h3>
+            <figure id="order-mockup" hidden><img alt=""><figcaption>Mockup ilustrativo</figcaption></figure>
+            <details id="order-reference" open><summary>Archivo del pedido</summary>
+            <figure class="attachment" id="receipt-file"><img alt="" hidden><figcaption></figcaption></figure>
+            <a class="text-button download" id="download-file" hidden>Descargar adjunto</a></details>
           </section>
+          </details>
+        <section class="project-tools"><div><strong id="source-label"></strong> <button id="change-project" class="text-button">Editar proyecto</button></div>
+          <details id="project-log"><summary>Historial del proyecto</summary><ol id="events"></ol></details>
+          <button class="text-button" id="archive-project"></button>
+        </section>
         </div>
       </article>
     </section>

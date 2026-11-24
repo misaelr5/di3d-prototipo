@@ -287,9 +287,19 @@ function displayOffer(entry) {
   el('edit-offer').textContent = offer ? 'Editar cotización' : 'Registrar cotización';
   el('offer-form').hidden = true;
   el('edit-offer').hidden = false;
+  el('approve-offer').hidden = !offer || offer.approved || !validCents(offer.cents) || entry.archived;
+  el('edit-offer').className = offer ? 'button secondary' : 'button primary';
   el('offer-result').textContent = '';
 }
+el('approve-offer').addEventListener('click', () => {
+  el('edit-offer').click();
+  el('offer-approval').value = 'approved';
+  el('save-offer').textContent = 'Confirmar aprobación';
+  el('save-offer').focus();
+});
 el('edit-offer').addEventListener('click', () => {
+  el('approve-offer').hidden = true;
+  el('save-offer').textContent = 'Guardar presupuesto';
   const offer = currentEntry.offer;
   const today = new Date();
   const localDate = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0,10);
@@ -302,6 +312,9 @@ el('edit-offer').addEventListener('click', () => {
   el('offer-form').hidden = false;
   el('edit-offer').hidden = true;
   el('offer-number').focus();
+});
+el('offer-approval').addEventListener('change', () => {
+  el('save-offer').textContent = 'Guardar presupuesto';
 });
 el('cancel-offer').addEventListener('click', () => {
   displayOffer(currentEntry);
@@ -353,6 +366,7 @@ function openProjectEditor(entry) {
   el('project-dialog-title').textContent = entry ? 'Editar proyecto' : 'Cargar consulta de WhatsApp';
   message(el('project-error')); dialog.showModal();
 }
+el('inbox-new').onclick = () => openProjectEditor();
 el('new-project').onclick = ()=>openProjectEditor();
 el('change-project').onclick = ()=>openProjectEditor(currentEntry);
 el('close-project').onclick = ()=>dialog.close();
@@ -395,7 +409,6 @@ function renderProjectTools(entry) {
   });
   el('events').replaceChildren(...(rows.length ? rows : [node('li','Los próximos cambios se registrarán aquí.')]));
   el('project-log').querySelector('summary').textContent = history.length ? 'Historial del proyecto · '+history.length : 'Historial del proyecto';
-  el('project-log').open = !!history.length;
   el('archive-project').textContent = entry.archived ? 'Reactivar proyecto' : 'Guardar en proyectos pasados';
 }
 el('archive-project').onclick = async event=>{

@@ -294,3 +294,37 @@ body[data-team] :is(.task span,.recent-row small,.contact-row small,.work-order 
  .login-art .login-logo { margin:0; }
  body[data-team] .masthead h1 { font-size:17px; }
 }
+
+/* Pedido seleccionado y acciones del taller */
+body[data-team]:is([data-view=receipt],[data-view=inbox]) main { max-width:none; }
+.inbox-title { display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:16px;flex-wrap:wrap; }
+.inbox-title h2 { margin:0; }
+.inbox-title .button { font-size:14px;min-height:44px; }
+.request-row { background:white;padding:12px 16px; }
+.request-row[aria-current=true] { background:#fff4d9;color:var(--ink); }
+.request-row[aria-current=true] :is(.row-meta,time,.row-piece > span,.reference-code) { color:#51432a; }
+#receipt { min-width:0; }
+.job { background:white;padding:clamp(16px,2vw,32px);border:1px solid var(--line);border-radius:10px; }
+#piece-title { font-size:clamp(26px,2.4vw,39px);overflow-wrap:anywhere; }
+.job-head .facts { flex-wrap:wrap;gap:8px 16px;margin:10px 0 16px; }
+.facts strong,#receipt-client { font-size:16px; }
+.job-grid { display:flex;flex-direction:column;align-items:stretch;gap:12px; }
+.job-grid > * { margin:0;min-width:0; }
+
+.job-grid .quote-record,#receipt .job-grid .tracking { background:var(--canvas);border:1px solid var(--line);border-radius:8px;padding:16px; }
+.quote-record header { margin-bottom:8px; }
+#payment-record { margin:12px 0 0;padding:12px 0 0;border:0;border-radius:0;border-top:1px solid var(--line); }
+#payment-summary { font-size:16px;font-weight:650; }
+.job-grid summary { min-height:44px;padding:10px 0;cursor:pointer;font-weight:700; }
+.project-specs,.job-grid .exchange { border-top:1px solid var(--line);padding:0; }
+.job-grid .project-tools { border-bottom:0; }
+.project-tools .text-button,.quote-record .button,#edit-tracking { min-height:44px; }
+.job-details { margin:0 0 12px;border:0; }
+@media(min-width:901px) {
+ .workspace { grid-template-columns:clamp(280px,22vw,380px) minmax(0,1fr);gap:clamp(16px,2vw,32px); }
+ #receipt { max-width:76rem; }
+}
+@media(max-width:650px) {
+ .job { padding:14px; }
+ #tracking-read { flex-wrap:wrap; }
+}

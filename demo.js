@@ -234,7 +234,7 @@ el('confirm-panel').addEventListener('click', () => {
   }
   return openInbox(true, true, Number(savedReference.slice(5)));
 });
-el('guide-question').addEventListener('click', () => el('question').focus());
+el('guide-question').addEventListener('click', () => { el('exchange-details').open = true; el('question').focus(); });
 
 function fillExample() {
   for (const key of ['piece', 'service', 'quantity', 'dimensions', 'use', 'material', 'contact', 'email']) {
@@ -337,7 +337,7 @@ async function renderInbox() {
       return row;
     });
     el('request-list').replaceChildren(...rows);
-    el('inbox-count').textContent = filtered.length === 0 ? 'No hay solicitudes con este estado.' :
+    el('inbox-count').textContent = filtered.length === 0 ? 'Sin coincidencias. Probá otro nombre o cambiá el filtro.' :
       filtered.length === 1 ? '1 solicitud' : filtered.length + ' solicitudes';
     return filtered;
   } catch {
@@ -348,7 +348,17 @@ statusFilter.addEventListener('change', () => openInbox(false, false));
 el('order-search').addEventListener('input', () => openInbox(false, false));
 
 function renderReceipt(entry) {
+  const changedProject = currentEntry?.id !== entry.id;
   currentEntry = entry;
+  el('receipt-client').textContent = entry.contact;
+  const sections = el('receipt').querySelector('.job-grid');
+  const firstSection = sections.querySelector(entry.offer ? '.quote-record' : '.tracking');
+  if (sections.firstElementChild !== firstSection) sections.prepend(firstSection);
+  if (changedProject) {
+    el('receipt').querySelector('.project-specs').open = false;
+    el('exchange-details').open = entry.state === 'missing' || !!entry.responseAfterQuote;
+    el('project-log').open = false;
+  }
   renderProjectTools(entry);
   el('receipt-reference').textContent = reference(entry.id);
   displayDate(el('receipt-date'), entry.createdAt);
