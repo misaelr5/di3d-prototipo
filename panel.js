@@ -182,8 +182,8 @@ function renderOverview(entries) {
       node('p', nextTask(featured), 'spot-pending'),
       action('Abrir ficha →','button primary',()=>visitEntry(featured)));
     spot.append(info);
-    if (featured.attachment?.example) {
-      const image=node('img',null,'spot-art'); image.src='perilla-volumen.webp'; image.alt='Ilustración de la perilla de ejemplo'; spot.append(image);
+    if (featured.attachment?.model === 'local') {
+      const image=node('img',null,'spot-art'); image.src='maqueta-volumen.svg'; image.alt='Ilustración de la maqueta del local'; spot.append(image);
 
     }
   } else spot.append(node('h2','Todos los pedidos están al día.'));

@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 260"><title>Croquis ilustrativo del local: planta y fachada</title><view id="movil" viewBox="0 0 600 260"/>
+<defs><pattern id="grid" width="16" height="16" patternUnits="userSpaceOnUse"><path d="M16 0H0V16" fill="none" stroke="#dedfd6"/></pattern></defs>
+<rect width="600" height="260" fill="#f5f4eb"/><rect width="600" height="260" fill="url(#grid)"/>
+<g fill="none" stroke="#41463e" stroke-width="4"><path d="M50 177V68h190v109h-57m-40 0H50m83-109v44h107"/><path stroke-width="1.4" d="M143 177v-40a40 40 0 0 1 40 40"/>
+<path d="M324 177V98h226v79zm-5-79V84h236v14z"/><path fill="#dedfd4" d="M335 113h108v51H335zm121 0h34v64h-34zm45 0h38v51h-38z"/></g>
+<g font-family="Arial,sans-serif" fill="#343832" font-size="19" text-anchor="middle"><text x="145" y="222">Planta</text><text x="437" y="222">Fachada</text></g></svg>

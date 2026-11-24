@@ -4,12 +4,12 @@ const prototypeService = 'Prototipado y producción';
 const states = Object.freeze({
   new: 'Nueva', review: 'En revisión', missing: 'Falta información', quoted: 'Cotizada'
 });
-const exampleAttachment = Object.freeze({ name: 'Croquis de la perilla.svg', example: true });
+const exampleAttachment = Object.freeze({ name: 'Croquis de la maqueta.svg', example: true, model: 'local' });
 const exampleRequest = Object.freeze({
-  service: prototypeService,
-  piece: 'Perillas para un equipo de ensayo',
-  quantity: '12',
-  use: 'Probar primero el encastre de una unidad antes de fabricar las demás.',
+  service: 'Maquetas y modelos',
+  piece: 'Maqueta de un local comercial',
+  quantity: '1',
+  use: 'Presentar el frente y la distribución del local en una reunión de diseño.',
   dimensions: '',
   material: '',
   guidance: true,
@@ -24,9 +24,9 @@ const browserRequests = (() => {
   function open() {
     if (!connection) {
       connection = new Promise((resolve, reject) => {
-        const request = indexedDB.open('di3d-cotizaciones-demo', 2);
+        const request = indexedDB.open('di3d-cotizaciones-demo', 3);
         request.onupgradeneeded = (event) => {
-          const initialTracking = { state: 'missing', note: 'Confirmar la medida del eje antes de cotizar' };
+          const initialTracking = { state: 'missing', note: 'Confirmar la escala de la maqueta antes de cotizar' };
           const store = event.oldVersion === 0
             ? request.result.createObjectStore(storeName, { keyPath: 'id', autoIncrement: true })
             : request.transaction.objectStore(storeName);
@@ -36,12 +36,17 @@ const browserRequests = (() => {
             const existing = store.get(1);
             existing.onsuccess = () => {
               const first = existing.result;
-              if (first?.attachment?.example && first.piece === exampleRequest.piece) {
-                const tracking = first.state === 'new' && !first.note ? initialTracking : {};
-                store.put({ ...first, ...tracking, sample: true });
-              }
+              if (!first?.attachment?.example || first.piece !== 'Perillas para un equipo de ensayo' ||
+                  !(first.sample || event.oldVersion === 1)) return;
+              const updated = { ...first, sample: true, piece: exampleRequest.piece, attachment: exampleAttachment };
+              if (first.quantity === '12') updated.quantity = exampleRequest.quantity;
+              if (first.service === prototypeService) updated.service = exampleRequest.service;
+              if (first.use === 'Probar primero el encastre de una unidad antes de fabricar las demás.') updated.use = exampleRequest.use;
+              if (first.note === 'Confirmar la medida del eje antes de cotizar') updated.note = initialTracking.note;
+              store.put(updated);
             };
           }
+          if (event.oldVersion >= 2) return;
           const common = { dimensions: '', guidance: false, material: '', attachment: null, sample: true };
           store.add({ ...common, service: 'Premios y reconocimientos', piece: 'Trofeos para un evento',
             quantity: '8', use: 'Entrega de premios al cierre de una jornada.', contact: 'Martín Díaz',

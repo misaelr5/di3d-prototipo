@@ -29,12 +29,12 @@ let detailRender = 0;
 let visibleEntries = [];
 let currentEntry;
 let replyTarget;
-const shaftQuestion = '¿Cuál es el diámetro del eje donde va montada la perilla?';
+const scaleQuestion = '¿En qué escala necesitás la maqueta del local?';
 const desktop = matchMedia('(min-width: 901px)');
 const smallDrawing = matchMedia('(max-width: 550px)');
-const sketchPreview = () => smallDrawing.matches ? 'perilla.svg#movil' : 'perilla.svg';
+const sketchPreview = (file) => file + (smallDrawing.matches ? '#movil' : '');
 smallDrawing.addEventListener('change', () => {
-  for (const image of document.querySelectorAll('img[data-sketch]')) image.src = sketchPreview();
+  for (const image of document.querySelectorAll('img[data-sketch]')) image.src = sketchPreview(image.dataset.sketch);
 });
 
 for (const [value, label] of Object.entries(states)) {
@@ -62,9 +62,9 @@ for (const button of document.querySelectorAll('[data-piece-view]')) {
     if (button.getAttribute('aria-pressed') === 'true') return;
     const volume = button.dataset.pieceView === 'volume';
     const preview = el('piece-preview');
-    preview.src = volume ? 'perilla-volumen.webp' : 'perilla.svg#movil';
-    preview.alt = volume ? 'Perilla estriada con un alojamiento central, ilustrada en volumen.' :
-      'Croquis de ejemplo con vistas superior y lateral y diámetro ilustrativo de 34 mm.';
+    preview.src = volume ? 'maqueta-volumen.svg' : 'maqueta.svg#movil';
+    preview.alt = volume ? 'Maqueta de un local comercial en perspectiva.' :
+      'Croquis del frente y la planta del local.';
     preview.parentElement.classList.toggle('drawing-mode', !volume);
     for (const other of button.parentElement.children) other.setAttribute('aria-pressed', String(other === button));
     reveal(preview);
@@ -129,14 +129,16 @@ function paintAttachment(container, file, download) {
   delete container.dataset.url;
   const fileUrl = file?.blob ? URL.createObjectURL(file.blob) : '';
   if (fileUrl) container.dataset.url = fileUrl;
-  const path = file?.example ? 'perilla.svg' : fileUrl;
+  const samplePath = file?.model === 'local' ? 'maqueta.svg' : 'perilla.svg';
+  const path = file?.example ? samplePath : fileUrl;
   const previewable = file?.example || imageTypes.includes(file?.blob?.type);
   image.hidden = !previewable;
   image.alt = file?.example
-    ? 'Croquis de la perilla en vista superior y lateral. Diámetro ilustrativo de 34 mm.'
+    ? file.name
     : file ? 'Vista previa de ' + file.name : '';
-  image.toggleAttribute('data-sketch', !!file?.example);
-  if (previewable) image.src = file?.example ? sketchPreview() : path;
+  if (file?.example) image.dataset.sketch = samplePath;
+  else delete image.dataset.sketch;
+  if (previewable) image.src = file?.example ? sketchPreview(samplePath) : path;
   else image.removeAttribute('src');
   caption.textContent = file?.name ?? 'Sin adjunto';
   if (download) {
@@ -464,7 +466,7 @@ function renderExchange(entry) {
   const thread = entry.clarifications ?? [];
   const latest = thread.at(-1);
   el('guide-question').hidden = !entry.guided || !!latest || entry.state === 'quoted';
-  el('guide-question').textContent = entry.attachment?.example ? 'Siguiente paso: pedir la medida del eje →' : 'Siguiente paso: pedir una aclaración →';
+  el('guide-question').textContent = entry.attachment?.model === 'local' ? 'Siguiente paso: confirmar la escala →' : 'Siguiente paso: pedir una aclaración →';
   el('late-answer').hidden = !entry.responseAfterQuote;
   const history = el('exchange-history');
   history.replaceChildren();
@@ -484,7 +486,7 @@ function renderExchange(entry) {
     }
     history.append(block);
   }
-  el('question').value = !latest && entry.attachment?.example ? shaftQuestion : '';
+  el('question').value = !latest && entry.attachment?.model === 'local' ? scaleQuestion : '';
   el('ask-form').hidden = !!latest;
   el('ask-again').hidden = !latest?.answer;
   el('open-reply').hidden = !latest || !!latest.answer;
@@ -543,7 +545,7 @@ async function openReply(id, index, token = replyTarget?.token) {
     el('reply-question').textContent = item.question;
     paintAttachment(el('reply-file'), entry.attachment);
     el('client-answer').value = '';
-    el('sample-answer').hidden = item.question !== shaftQuestion || !entry.attachment?.example;
+    el('sample-answer').hidden = item.question !== scaleQuestion || !entry.attachment?.example;
     el('reply-form').hidden = !!item.answer;
     el('reply-done').hidden = !item.answer;
     el('reply-copy').textContent = item.answer || '';
@@ -557,7 +559,7 @@ async function openReply(id, index, token = replyTarget?.token) {
   }
 }
 el('sample-answer').addEventListener('click', () => {
-  el('client-answer').value = 'El eje mide 6 mm de diámetro.';
+  el('client-answer').value = 'Necesitamos la maqueta en escala 1:50.';
   el('client-answer').focus();
 });
 el('reply-panel').addEventListener('click', () => openInbox(true, true, replyTarget.id));

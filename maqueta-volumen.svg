@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 310" role="img"><title>Maqueta arquitectónica de un local con vidriera</title>
+<rect width="520" height="310" fill="#232627"/>
+<g stroke-linejoin="round" stroke="#343634" stroke-width="2">
+<path fill="#959388" d="m59 192 148-92 252 59-148 99z"/>
+<path fill="#bbb8a8" d="m59 185 148-92 252 59-148 99z"/>
+<path fill="#cac8bb" d="m107 165 99-61 0-62-99 61z"/>
+<path fill="#eeecdf" d="m107 103 99-61 202 48-98 63z"/>
+<path fill="#c5c2b3" d="m107 103 203 50v69l-203-52z"/>
+<path fill="#a8a79e" d="m310 153 98-63v67l-98 65z"/>
+<path fill="#536668" d="m122 119 92 23v43l-92-23z m103 25 32 8v42l-32-8z m42 10 31 8v43l-31-8z"/>
+<path stroke="#dbd6c7" fill="none" d="m165 130 0 42m109-16 0 42"/>
+<path fill="#eca92f" d="m106 109 205 50-6 9-207-51z"/>
+<path fill="#f6f3e6" d="m100 100 105-65 212 50-106 69z"/>
+<path fill="#c7c6b9" d="m122 99 85-53 189 45-85 54z"/>
+<path fill="#8b9590" d="m330 151 54-35v31l-54 36z"/>
+</g></svg>
