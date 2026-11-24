@@ -51,12 +51,18 @@
     <noscript><p>Activá JavaScript para probar la muestra local.</p></noscript>
     <p class="error banner" id="storage-error" role="alert" hidden></p>
     <section id="login" class="login" aria-labelledby="login-title" hidden>
-      <div class="login-art"><img class="login-logo" src="di3d-blanco.png" alt="DI3D"><strong>Gestión del taller</strong><p>Consultas, trabajos y cobros de DI3D.</p></div>
+      <header class="login-brand">
+        <img src="di3d-oscuro.png" width="800" height="870" alt="DI3D">
+        <span><img src="iconos-tabler/lock.svg" alt="" width="16" height="16">Acceso del equipo</span>
+      </header>
+      <div class="login-intro">
+        <h1 id="login-title" tabindex="-1">Gestión del taller</h1>
+        <p>Los pedidos, presupuestos y cobros de DI3D en un mismo lugar.</p>
+      </div>
+      <img class="login-panorama" src="mockups/local.webp" alt="Maqueta ilustrativa de un local comercial con toldo amarillo." width="900" height="600">
       <form id="login-form">
-        <img src="iconos-tabler/lock.svg" width="30" height="30" alt="">
-        <h1 id="login-title" tabindex="-1">Acceso del equipo</h1>
-        <p>La clave de muestra ya está cargada. Entrá para probar el panel.</p>
-        <div class="field"><label for="team-pass">Contraseña</label><input id="team-pass" type="password" autocomplete="off" required aria-describedby="login-error"></div>
+        <div class="login-hint"><strong>Entrá a la demo</strong><p id="login-hint">La clave de muestra ya está cargada.</p></div>
+        <div class="field"><label for="team-pass">Contraseña</label><input id="team-pass" type="password" autocomplete="off" required aria-describedby="login-hint login-error"></div>
         <p class="error" id="login-error" role="alert" hidden></p>
         <button type="submit" class="button primary">Entrar al panel →</button>
         <button type="button" class="text-button" id="cancel-login" hidden>Volver al sitio</button>
