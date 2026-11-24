@@ -126,7 +126,42 @@ function byPriority(a,b) {
   const ranks = {missing:0, new:1, review:2, quoted:3};
   return ranks[a.state]-ranks[b.state] || b.id-a.id;
 }
+let volumeMeasure = 'quantity';
+let overviewEntries = [];
+function renderVolumeChart() {
+  const grouped = new Map();
+  for (const entry of overviewEntries) {
+    const service = entry.service || 'Consulta general';
+    const amount = volumeMeasure === 'orders' ? 1 : Number(entry.quantity) || 0;
+    grouped.set(service, (grouped.get(service) || 0) + amount);
+  }
+  const values = [...grouped].sort((a, b) => b[1] - a[1]);
+  const maximum = values[0]?.[1] || 1;
+  const chart = el('volume-chart');
+  chart.replaceChildren();
+  for (const [service, amount] of values) {
+    const row = node('div', null, 'volume-row');
+    const track = node('div', null, 'volume-track');
+    track.setAttribute('aria-hidden', 'true');
+    const bar = node('div', null, 'volume-fill');
+    bar.style.width = (100 * amount / maximum) + '%';
+    track.append(bar);
+    row.append(node('span',service), node('strong',amount.toLocaleString('es-AR')),track);
+    chart.append(row);
+  }
+  if (!values.length) chart.append(node('p','Sin solicitudes para mostrar.'));
+}
+for (const button of document.querySelectorAll('[data-volume]')) {
+  button.addEventListener('click', () => {
+    volumeMeasure = button.dataset.volume;
+    for (const choice of button.parentElement.children) choice.setAttribute('aria-pressed', String(choice === button));
+    renderVolumeChart();
+  });
+}
+
 function renderOverview(entries) {
+  overviewEntries = entries;
+  renderVolumeChart();
   el('today').textContent = new Intl.DateTimeFormat('es-AR', { weekday:'long', day:'numeric', month:'long' }).format(new Date());
   const descriptors = [['new','Nuevas','circle-dashed'],['review','En revisión','eye'],['missing','Falta información','message-question'],['quoted','Cotizadas','circle-check']];
   el('metrics').replaceChildren(...descriptors.map(([state,label,glyph]) => {

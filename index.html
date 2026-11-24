@@ -61,11 +61,17 @@
     <section id="overview" aria-labelledby="overview-title" class="desk-view" hidden>
       <header class="desk-head"><div><p class="desk-kicker">Operaciones</p><h1 id="overview-title" tabindex="-1">Resumen del taller</h1></div><span class="desk-date" id="today"></span></header>
       <div id="metrics" class="metrics" aria-label="Solicitudes por estado"></div>
-      <div class="summary-split">
+      <div class="overview-layout">
+        <section class="volume-card"><header><h2>Volumen por servicio</h2>
+          <div class="volume-switch" role="group" aria-label="Medida del gráfico">
+            <button type="button" data-volume="quantity" aria-pressed="true">Unidades</button>
+            <button type="button" data-volume="orders" aria-pressed="false">Solicitudes</button>
+          </div></header><div id="volume-chart" aria-live="polite"></div>
+        </section>
         <article id="spotlight" class="spotlight"></article>
+        <section class="recent"><header><h2>Últimas solicitudes</h2><button type="button" class="text-button" data-go="inbox">Ver todas →</button></header><div id="recent-list"></div></section>
         <section class="task-box"><h2>Para atender</h2><div id="task-list"></div></section>
       </div>
-      <section class="recent"><header><h2>Últimas solicitudes</h2><button type="button" class="text-button" data-go="inbox">Ver todas →</button></header><div id="recent-list"></div></section>
     </section>
     <section id="board" aria-labelledby="board-title" class="desk-view" hidden>
       <header class="desk-head"><div><p class="desk-kicker">Operaciones</p><h1 id="board-title" tabindex="-1">Tablero de seguimiento</h1></div></header>
