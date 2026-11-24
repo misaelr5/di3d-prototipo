@@ -1,0 +1,76 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 820 294">
+  <title>Croquis de una perilla en vista superior y lateral</title>
+  <desc>Una perilla de borde estriado con encastre central. El diámetro de 34 milímetros es ilustrativo.</desc>
+  <defs>
+    <pattern id="grid" width="16" height="16" patternUnits="userSpaceOnUse">
+      <path d="M16 0H0V16" fill="none" stroke="#deddd4" stroke-width="1"/>
+    </pattern>
+    <path id="rib" d="M150 51v9" stroke-width="2.4" stroke-linecap="round"/>
+  </defs>
+  <view id="movil" viewBox="900 0 560 245"/>
+  <view id="perspectiva" viewBox="4 64 300 184"/>
+  <rect width="820" height="294" fill="#f2f2eb"/>
+  <rect width="820" height="294" fill="url(#grid)"/>
+  <g stroke="#888a7e" fill="none"><path d="M12 24V12h12m772 0h12v12M12 270v12h12m772 0h12v-12"/></g>
+  <line x1="306" y1="30" x2="306" y2="260" stroke="#c2c3b7"/>
+  <text x="154" y="51" text-anchor="middle" font-family="Arial,sans-serif" font-size="17" fill="#474940">Vista en perspectiva</text>
+<ellipse cx="154" cy="202" rx="69" ry="29" fill="#a4a69b" stroke="#353731" stroke-width="1.6"/>
+<path d="M85 186v16a69 29 0 0 0 138 0v-16" fill="#a4a69b" stroke="#353731" stroke-width="1.6"/>
+<polygon points="254.0,130.0 250.2,135.3 250.2,191.3 254.0,186.0" fill="#bdbeb1" stroke="#353731" stroke-width="1.15"/>
+<polygon points="250.2,135.3 250.6,140.9 250.6,196.9 250.2,191.3" fill="#96998e" stroke="#353731" stroke-width="1.15"/>
+<polygon points="250.6,140.9 246.4,146.1 246.4,202.1 250.6,196.9" fill="#c3c4b8" stroke="#353731" stroke-width="1.15"/>
+<polygon points="246.4,146.1 238.0,150.4 238.0,206.4 246.4,202.1" fill="#a5a79b" stroke="#353731" stroke-width="1.15"/>
+<polygon points="238.0,150.4 233.3,155.6 233.3,211.6 238.0,206.4" fill="#bdbeb1" stroke="#353731" stroke-width="1.15"/>
+<polygon points="233.3,155.6 224.7,159.7 224.7,215.7 233.3,211.6" fill="#96998e" stroke="#353731" stroke-width="1.15"/>
+<polygon points="224.7,159.7 213.0,162.3 213.0,218.3 224.7,215.7" fill="#c3c4b8" stroke="#353731" stroke-width="1.15"/>
+<polygon points="213.0,162.3 204.0,166.4 204.0,222.4 213.0,218.3" fill="#a5a79b" stroke="#353731" stroke-width="1.15"/>
+<polygon points="204.0,166.4 192.3,168.8 192.3,224.8 204.0,222.4" fill="#bdbeb1" stroke="#353731" stroke-width="1.15"/>
+<polygon points="192.3,168.8 179.1,169.4 179.1,225.4 192.3,224.8" fill="#96998e" stroke="#353731" stroke-width="1.15"/>
+<polygon points="179.1,169.4 167.1,171.6 167.1,227.6 179.1,225.4" fill="#c3c4b8" stroke="#353731" stroke-width="1.15"/>
+<polygon points="167.1,171.6 154.0,172.0 154.0,228.0 167.1,227.6" fill="#a5a79b" stroke="#353731" stroke-width="1.15"/>
+<polygon points="154.0,172.0 141.3,170.4 141.3,226.4 154.0,228.0" fill="#bdbeb1" stroke="#353731" stroke-width="1.15"/>
+<polygon points="141.3,170.4 128.1,170.6 128.1,226.6 141.3,226.4" fill="#96998e" stroke="#353731" stroke-width="1.15"/>
+<polygon points="128.1,170.6 115.7,168.8 115.7,224.8 128.1,226.6" fill="#c3c4b8" stroke="#353731" stroke-width="1.15"/>
+<polygon points="115.7,168.8 105.5,165.3 105.5,221.3 115.7,224.8" fill="#a5a79b" stroke="#353731" stroke-width="1.15"/>
+<polygon points="105.5,165.3 93.1,163.3 93.1,219.3 105.5,221.3" fill="#bdbeb1" stroke="#353731" stroke-width="1.15"/>
+<polygon points="93.1,163.3 83.3,159.7 83.3,215.7 93.1,219.3" fill="#96998e" stroke="#353731" stroke-width="1.15"/>
+<polygon points="83.3,159.7 77.0,154.8 77.0,210.8 83.3,215.7" fill="#c3c4b8" stroke="#353731" stroke-width="1.15"/>
+<polygon points="77.0,154.8 67.4,151.0 67.4,207.0 77.0,210.8" fill="#a5a79b" stroke="#353731" stroke-width="1.15"/>
+<polygon points="67.4,151.0 61.6,146.1 61.6,202.1 67.4,207.0" fill="#bdbeb1" stroke="#353731" stroke-width="1.15"/>
+<polygon points="61.6,146.1 60.3,140.5 60.3,196.5 61.6,202.1" fill="#96998e" stroke="#353731" stroke-width="1.15"/>
+<polygon points="60.3,140.5 54.9,135.5 54.9,191.5 60.3,196.5" fill="#c3c4b8" stroke="#353731" stroke-width="1.15"/>
+<polygon points="54.9,135.5 54.0,130.0 54.0,186.0 54.9,191.5" fill="#a5a79b" stroke="#353731" stroke-width="1.15"/>
+<polygon points="254.0,130.0 250.2,135.3 250.6,140.9 246.4,146.1 238.0,150.4 233.3,155.6 224.7,159.7 213.0,162.3 204.0,166.4 192.3,168.8 179.1,169.4 167.1,171.6 154.0,172.0 141.3,170.4 128.1,170.6 115.7,168.8 105.5,165.3 93.1,163.3 83.3,159.7 77.0,154.8 67.4,151.0 61.6,146.1 60.3,140.5 54.9,135.5 54.0,130.0 57.8,124.7 57.4,119.1 61.6,113.9 70.0,109.6 74.7,104.4 83.3,100.3 95.0,97.7 104.0,93.6 115.7,91.2 128.9,90.6 140.9,88.4 154.0,88.0 166.7,89.6 179.9,89.4 192.3,91.2 202.5,94.7 214.9,96.7 224.7,100.3 231.0,105.2 240.6,109.0 246.4,113.9 247.7,119.5 253.1,124.5" fill="#dedfd3" stroke="#353731" stroke-width="1.15"/>
+<ellipse cx="154" cy="128" rx="84" ry="35" fill="#e9e9e0" stroke="#45473d" stroke-width="1.5"/>
+<ellipse cx="154" cy="128" rx="76" ry="31" fill="none" stroke="#b7b8ad"/>
+<path d="M167 122v14a21 9 0 1 1 0-14z" fill="#54574e" stroke="#292c23" stroke-width="2"/>
+  <g transform="translate(288 28) scale(.93)"><g id="planos">  <g fill="#494a44" font-family="Segoe UI, sans-serif" font-weight="600" font-size="21" text-anchor="middle">
+    <text x="150" y="32">Vista superior</text>
+    <text x="416" y="32">Vista lateral</text>
+  </g>
+  <g stroke="#30332e" stroke-width="2.5">
+    <circle cx="150" cy="106" r="55" fill="#fff"/>
+    <circle cx="150" cy="106" r="43" fill="#e8e7dc" stroke-width="1.5"/>
+    <use href="#rib"/><use href="#rib" transform="rotate(22.5 150 106)"/><use href="#rib" transform="rotate(45 150 106)"/><use href="#rib" transform="rotate(67.5 150 106)"/><use href="#rib" transform="rotate(90 150 106)"/><use href="#rib" transform="rotate(112.5 150 106)"/><use href="#rib" transform="rotate(135 150 106)"/><use href="#rib" transform="rotate(157.5 150 106)"/><use href="#rib" transform="rotate(180 150 106)"/><use href="#rib" transform="rotate(202.5 150 106)"/><use href="#rib" transform="rotate(225 150 106)"/><use href="#rib" transform="rotate(247.5 150 106)"/><use href="#rib" transform="rotate(270 150 106)"/><use href="#rib" transform="rotate(292.5 150 106)"/><use href="#rib" transform="rotate(315 150 106)"/><use href="#rib" transform="rotate(337.5 150 106)"/>
+    <path d="M160 94v24a16 16 0 1 1 0-24z" fill="#fff"/>
+    <path d="M379 129v18h74v-18" fill="#c8c8bd"/>
+    <path d="M350 79q0-10 10-10h112q10 0 10 10v51H350z" fill="#fff"/>
+    <path d="M350 86h132M350 121h132M360 86v35m11-35v35m13-35v35m15-35v35m17-35v35m17-35v35m15-35v35m13-35v35m11-35v35" stroke-width="1.5"/>
+  </g>
+  <g fill="none" stroke="#85867a" stroke-dasharray="5 4" stroke-width="1.3">
+    <path d="M135 106h30m-15-15v30m266-65v104"/>
+  </g>
+  <g stroke="#686540" stroke-width="1.7" fill="none">
+    <path d="M95 150v38m110-38v38M95 180h110m-101-5-9 5 9 5m92-10 9 5-9 5"/>
+  </g>
+  <g fill="#46463a" font-family="Segoe UI, sans-serif" font-weight="600" font-size="21" text-anchor="middle">
+    <text x="150" y="210">Ø 34 mm</text>
+    <text x="150" y="233">Medida ilustrativa</text>
+  </g>
+</g></g>
+  <g transform="translate(900)">
+    <rect width="560" height="245" fill="#f2f2eb"/>
+    <rect width="560" height="245" fill="url(#grid)"/>
+    <use href="#planos"/>
+  </g>
+</svg>

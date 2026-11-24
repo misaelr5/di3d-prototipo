@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="es-AR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' blob:; font-src data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Prototipo DI3D | De la consulta a la cotización</title>
+  <link rel="stylesheet" href="tipografia/manrope.css">
+  <link rel="stylesheet" href="estilos.css">
+  <link rel="stylesheet" href="panel.css">
+  <script src="vendor/gsap/gsap.min.js" defer></script>
+  <script src="pedidos.js" defer></script>
+  <script src="conexion.js" defer></script>
+  <script src="demo.js" defer></script>
+  <script src="panel.js" defer></script>
+</head>
+<body>
+  <aside class="demo-bar" aria-label="Controles de presentación">
+    <div class="shell demo-inner">
+      <span>Prototipo DI3D · Datos ficticios</span>
+      <div class="role-switch" role="group" aria-label="Vista de la muestra">
+        <button type="button" id="client-view" aria-pressed="true">Vista del cliente</button>
+        <button type="button" id="team-view" aria-pressed="false">Vista del equipo</button>
+      </div>
+      <button class="text-button demo-example" id="load-example" type="button" hidden>Cargar ejemplo</button>
+    </div>
+  </aside>
+  <aside class="rail" id="team-rail" aria-label="Navegación del equipo" hidden>
+    <div class="rail-brand">DI3D<span>Gestión del taller</span></div>
+    <nav aria-label="Secciones del panel">
+      <button type="button" data-section="overview"><img src="iconos-tabler/layout-dashboard.svg" alt="">Resumen</button>
+      <button type="button" data-section="inbox"><img src="iconos-tabler/inbox.svg" alt="">Solicitudes</button>
+      <button type="button" data-section="board"><img src="iconos-tabler/layout-kanban.svg" alt="">Seguimiento</button>
+      <button type="button" data-section="contacts"><img src="iconos-tabler/users.svg" alt="">Contactos</button>
+    </nav>
+    <button type="button" id="logout"><img src="iconos-tabler/logout.svg" alt="">Cerrar sesión</button>
+  </aside>
+  <header class="masthead">
+    <div class="shell masthead-inner">
+      <button type="button" class="brand" id="home-link" aria-label="DI3D · Volver a la portada">DI3D</button>
+      <h1 id="inbox-heading" tabindex="-1" hidden>Solicitudes de cotización</h1>
+      <span id="site-label">Servicios</span>
+    </div>
+  </header>
+  <main class="shell">
+    <noscript><p>Activá JavaScript para probar la muestra local.</p></noscript>
+    <p class="error banner" id="storage-error" role="alert" hidden></p>
+    <section id="login" class="login" aria-labelledby="login-title" hidden>
+      <div class="login-art"><span>DI3D / Equipo</span><img src="perilla-volumen.webp" alt="Ilustración en volumen de la perilla de ensayo"><strong>Gestión del taller</strong></div>
+      <form id="login-form">
+        <img src="iconos-tabler/lock.svg" width="30" height="30" alt="">
+        <h1 id="login-title" tabindex="-1">Acceso del equipo</h1>
+        <p>La clave de prueba ya está cargada. Tocá «Entrar al panel» para continuar como parte del equipo.</p>
+        <div class="field"><label for="team-pass">Contraseña</label><input id="team-pass" type="password" autocomplete="off" required aria-describedby="login-error"></div>
+        <p class="error" id="login-error" role="alert" hidden></p>
+        <button type="submit" class="button primary">Entrar al panel →</button>
+        <button type="button" class="text-button" id="cancel-login">Volver al sitio</button>
+      </form>
+    </section>
+    <section id="overview" aria-labelledby="overview-title" class="desk-view" hidden>
+      <header class="desk-head"><div><p class="desk-kicker">Operaciones</p><h1 id="overview-title" tabindex="-1">Resumen del taller</h1></div><span class="desk-date" id="today"></span></header>
+      <div id="metrics" class="metrics" aria-label="Solicitudes por estado"></div>
+      <div class="summary-split">
+        <article id="spotlight" class="spotlight"></article>
+        <section class="task-box"><h2>Para atender</h2><div id="task-list"></div></section>
+      </div>
+      <section class="recent"><header><h2>Últimas solicitudes</h2><button type="button" class="text-button" data-go="inbox">Ver todas →</button></header><div id="recent-list"></div></section>
+    </section>
+    <section id="board" aria-labelledby="board-title" class="desk-view" hidden>
+      <header class="desk-head"><div><p class="desk-kicker">Operaciones</p><h1 id="board-title" tabindex="-1">Tablero de seguimiento</h1></div></header>
+      <p class="muted board-hint">Abrí una ficha para actualizar su estado, responsable o próxima revisión.</p>
+      <div class="board-grid" id="board-list"></div>
+    </section>
+    <section id="contacts" aria-labelledby="contacts-title" class="desk-view" hidden>
+      <header class="desk-head"><div><p class="desk-kicker">Agenda del equipo</p><h1 id="contacts-title" tabindex="-1">Contactos</h1></div></header>
+      <div class="field desk-search"><label for="contact-search">Buscar por nombre o correo</label><input type="search" id="contact-search"></div>
+      <div id="contact-list"></div>
+    </section>
+
+    <section class="cover" id="home" aria-labelledby="home-heading" hidden>
+      <div class="cover-copy">
+        <p class="eyebrow">Servicios de DI3D</p>
+        <h1 id="home-heading" tabindex="-1">Diseño, prototipado e impresión 3D</h1>
+        <p>Contanos qué pieza necesitás. Podés compartir un plano, una foto o un croquis para que evaluemos tu pedido.</p>
+        <div class="cover-actions">
+          <button class="button primary launch" type="button" id="tour">Probar el recorrido completo <span aria-hidden="true">→</span></button>
+          <p class="tour-description">Probá el ejemplo de las 12 perillas. Confirmá el pedido y abrilo en el panel para verlo como lo vería el equipo.</p>
+          <button class="text-button" id="home-panel" type="button">Ingresar al panel del equipo →</button>
+        </div>
+      </div>
+      <figure class="cover-drawing">
+        <div class="piece-stage">
+          <div class="piece-controls" role="group" aria-label="Vista de la pieza">
+            <button type="button" data-piece-view="volume" aria-pressed="true">Volumen</button>
+            <button type="button" data-piece-view="drawing" aria-pressed="false">Croquis</button>
+          </div>
+          <img id="piece-preview" src="perilla-volumen.webp" width="840" height="500" alt="Perilla estriada con un alojamiento central, ilustrada en volumen.">
+        </div>
+        <figcaption><span>Pieza de ejemplo</span><strong>Perilla para equipo de ensayo</strong></figcaption>
+      </figure>
+      <div class="cover-services"><strong>Empezar con otro proyecto</strong>
+        <button class="text-button" type="button" id="start-prototype">Consultar prototipado</button>
+        <button class="text-button" type="button" id="start-general">Consulta general</button>
+      </div>
+    </section>
+
+    <section id="edit-view" aria-labelledby="form-heading" hidden>
+      <button class="text-button back" id="form-back" type="button">← Volver a Servicios</button>
+      <header class="view-bar">
+        <h1 id="form-heading" tabindex="-1">Contanos qué necesitás fabricar</h1>
+      </header>
+      <form id="quote" autocomplete="off" novalidate>
+        <div class="form-grid">
+          <fieldset>
+            <legend class="visually-hidden">Tu proyecto</legend>
+            <div class="field">
+              <label for="service">Servicio <span>(opcional)</span></label>
+              <select id="service" name="service">
+                <option value="">Sin elegir</option>
+                <option>Diseño y desarrollo</option>
+                <option>Prototipado y producción</option>
+                <option>Maquetas y modelos</option>
+                <option>Premios y reconocimientos</option>
+                <option>Merchandising</option>
+                <option>Regalos corporativos</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="piece">Descripción de la pieza o proyecto</label>
+              <textarea id="piece" name="piece" rows="2" required maxlength="400" aria-describedby="piece-error"></textarea>
+              <p class="error" id="piece-error" hidden></p>
+            </div>
+              <div class="field">
+                <label for="quantity">Cantidad total <span>(si la sabés)</span></label>
+                <input id="quantity" name="quantity" inputmode="numeric" maxlength="15" aria-describedby="quantity-error">
+                <p class="error" id="quantity-error" hidden></p>
+              </div>
+            <details id="spec-options"><summary>Agregar precisiones del proyecto</summary>
+            <div class="field">
+              <label for="use" id="use-label">¿Para qué lo vas a usar? <span>(opcional)</span></label>
+              <textarea id="use" name="use" rows="2" maxlength="400"></textarea>
+            </div>
+              <div class="field" id="dimensions-field">
+                <label for="dimensions">Medidas aproximadas <span>(opcional)</span></label>
+                <input id="dimensions" name="dimensions" maxlength="100">
+              </div>
+            <div id="material-field" class="field">
+              <label for="material">Material <span>(si lo sabés)</span></label>
+              <input id="material" name="material" maxlength="100">
+              <label class="check"><input type="checkbox" id="guidance" name="guidance"> Necesito orientación</label>
+            </div>
+            </details>
+          </fieldset>
+          <fieldset class="reference-field">
+              <legend>Plano, foto o croquis <span>(opcional)</span></legend>
+              <figure class="attachment" id="form-file">
+                <img alt="" hidden>
+                <figcaption></figcaption>
+              </figure>
+              <div class="field file-field">
+                <input class="visually-hidden" id="attachment" type="file" aria-describedby="file-status file-error">
+                <label class="button secondary file-button" for="attachment" id="attachment-label">Elegí un archivo</label>
+                <button class="text-button" type="button" id="remove-file" hidden>Quitar</button>
+              </div>
+              <p class="visually-hidden" id="file-status" role="status"></p>
+              <p class="error" id="file-error" role="alert" hidden></p>
+              <p class="muted small">Hasta 15 MB en esta muestra.</p>
+            </fieldset>
+            <fieldset class="contact-fields">
+              <legend>Contacto</legend>
+              <div class="field">
+                <label for="contact">Nombre o empresa</label>
+                <input id="contact" name="contact" required maxlength="100" aria-describedby="contact-error">
+                <p class="error" id="contact-error" hidden></p>
+              </div>
+              <div class="field">
+                <label for="email">Correo electrónico</label>
+                <input id="email" name="email" type="email" required maxlength="254" aria-describedby="email-error">
+                <p class="error" id="email-error" hidden></p>
+              </div>
+            </fieldset>
+        </div>
+        <div class="form-actions">
+          <button class="button primary" type="submit" id="submit-request">Confirmar solicitud</button>
+          <p class="error" id="quote-error" role="alert" hidden></p>
+        </div>
+      </form>
+    </section>
+
+    <section class="confirmation job" id="confirmation" aria-labelledby="confirmation-heading" hidden>
+      <h1 id="confirmation-heading" tabindex="-1">Solicitud registrada en la muestra</h1>
+      <div class="confirm-ref"><span>Tu número de referencia</span><strong id="confirm-reference"></strong></div>
+      <p id="confirm-summary"></p>
+      <button class="button primary" id="confirm-panel" type="button">Ver este pedido en el panel →</button>
+      <button class="text-button" id="confirm-back" type="button">Volver a Servicios</button>
+    </section>
+
+    <section class="client-reply" id="clarification-view" aria-labelledby="reply-title" hidden>
+      <p class="eyebrow" id="reply-reference"></p>
+      <h1 id="reply-title" tabindex="-1">Una precisión sobre tu pedido</h1>
+      <p id="reply-piece"></p>
+      <div class="reply-columns">
+        <div>
+          <h2>DI3D te consulta</h2><p class="question-text" id="reply-question"></p>
+          <form id="reply-form">
+            <div class="field"><label for="client-answer">Tu respuesta</label><textarea id="client-answer" rows="3" required maxlength="800"></textarea></div>
+            <button class="text-button" type="button" id="sample-answer" hidden>Usar respuesta de ejemplo</button>
+            <div class="form-actions"><button class="button primary" type="submit" id="save-answer">Confirmar respuesta</button></div>
+          </form>
+          <div id="reply-done" hidden><h3>Tu respuesta quedó en el pedido</h3><p id="reply-copy"></p><button class="button primary" type="button" id="reply-panel">Ver respuesta en el panel →</button></div>
+          <p class="error" role="alert" id="reply-error" hidden></p>
+        </div>
+        <figure class="attachment" id="reply-file"><img alt="" hidden><figcaption></figcaption></figure>
+      </div>
+    </section>
+
+    <div class="workspace" id="workspace" hidden>
+    <section id="inbox" aria-labelledby="inbox-heading" hidden>
+      <header class="view-bar inbox-header">
+        <h2>Bandeja</h2>
+        <div class="filter-field">
+          <label for="order-search">Buscar pedido</label><input id="order-search" type="search" placeholder="Pieza, referencia o contacto">
+          <label for="status-filter">Filtrar por estado</label>
+          <select id="status-filter"><option value="">Todos los estados</option></select>
+        </div>
+      </header>
+      <p class="muted" id="inbox-count" role="status"></p>
+      <ul class="request-list" id="request-list"></ul>
+      <template id="request-row">
+        <li><button class="request-row" type="button">
+          <span class="row-piece"><strong></strong><span></span></span>
+          <span class="row-meta"><span class="reference-code"></span><time></time></span>
+          <span class="badge"></span>
+
+        </button></li>
+      </template>
+    </section>
+
+    <section id="receipt" aria-labelledby="piece-title" hidden>
+      <button class="text-button back" id="receipt-back" type="button">← Volver a solicitudes</button>
+      <article class="job" aria-labelledby="piece-title">
+        <header class="job-head">
+          <div class="receipt-meta"><span id="service-output"></span><span id="receipt-status" class="badge"></span></div>
+          <h2 id="piece-title" tabindex="-1"></h2>
+          <div class="facts"><strong id="quantity-output"></strong><span id="receipt-material"><span id="material-output"></span></span></div>
+        </header>
+        <div class="job-grid">
+          <section class="job-reference" aria-labelledby="reference-heading">
+            <h3 id="reference-heading" class="visually-hidden">Referencia del cliente</h3>
+            <figure class="attachment" id="receipt-file"><img alt="" hidden><figcaption></figcaption></figure>
+            <a class="text-button download" id="download-file" hidden>Descargar adjunto</a>
+          </section>
+          <section class="exchange" aria-labelledby="exchange-heading">
+            <h3 id="exchange-heading">Aclaraciones con el cliente</h3>
+            <div id="exchange-history"></div>
+            <form id="ask-form">
+              <div class="field"><label for="question">¿Qué dato necesitás para cotizar?</label><input id="question" required maxlength="400"></div>
+              <button class="button primary" type="submit" id="ask">Pedir aclaración</button>
+            </form>
+            <button class="button primary" type="button" id="open-reply" hidden>Responder como cliente →</button>
+            <button class="text-button" type="button" id="copy-reply" hidden>Copiar enlace local del cliente</button>
+            <p id="copy-result" class="small muted" role="status"></p>
+            <button class="text-button" type="button" id="ask-again" hidden>Pedir otra aclaración</button>
+            <p class="error" role="alert" id="ask-error" hidden></p>
+          </section>
+          <section class="tracking" aria-labelledby="tracking-title">
+            <h3 id="tracking-title">Seguimiento interno</h3>
+            <div id="tracking-read"><p id="note-read"></p><button class="button secondary" id="edit-tracking" type="button">Actualizar seguimiento</button></div>
+            <p class="planning" id="plan-read"></p>
+            <form id="follow-up" hidden>
+            <fieldset>
+              <legend class="visually-hidden">Editar seguimiento</legend>
+              <div class="field"><label for="request-status">Estado</label><select id="request-status" required></select></div>
+              <div class="plan-fields"><div class="field"><label for="owner">Responsable</label><input id="owner" maxlength="100"></div>
+              <div class="field"><label for="next-review">Próxima revisión</label><input id="next-review" type="date" max="9999-12-31"></div></div>
+              <div class="field"><label for="internal-note">Nota interna</label><textarea id="internal-note" rows="3" maxlength="1200" placeholder="¿Qué falta confirmar?"></textarea></div>
+              <div class="form-actions">
+                <button class="button primary" id="save-follow-up" type="submit">Guardar seguimiento</button>
+                <button class="text-button" type="button" id="cancel-tracking">Cancelar</button>
+              </div>
+            </fieldset>
+          </form>
+            <p class="small" id="follow-result" role="status"></p>
+          </section>
+          <dl class="job-details">
+            <div><dt>Pedido</dt><dd><span id="receipt-reference" class="reference-code"></span> · <time id="receipt-date"></time></dd></div>
+            <div><dt>Contacto</dt><dd><span id="name-output"></span><span id="email-output" class="email"></span></dd></div>
+            <div><dt>Uso o finalidad</dt><dd id="use-output"></dd></div>
+            <div id="guidance-output" hidden><dt>Material</dt><dd>El cliente pidió orientación.</dd></div>
+            <div id="receipt-dimensions"><dt>Medidas aproximadas</dt><dd id="dimensions-output"></dd></div>
+          </dl>
+          <section class="quote-record" aria-labelledby="quote-record-title">
+            <header><h3 id="quote-record-title">Cotización del equipo</h3><button class="text-button" type="button" id="edit-offer">Registrar cotización</button></header>
+            <div id="offer-read" hidden><p id="offer-info"></p><a class="text-button" id="offer-download" hidden>Descargar PDF</a></div>
+            <form id="offer-form" hidden>
+              <div class="plan-fields"><div class="field"><label for="offer-number">Número de cotización</label><input id="offer-number" maxlength="80" required></div>
+              <div class="field"><label for="offer-date">Fecha de cotización</label><input type="date" id="offer-date" required max="9999-12-31"></div></div>
+              <div class="field"><label for="offer-file">PDF de la cotización <span>(opcional, hasta 15 MB)</span></label><input type="file" accept=".pdf,application/pdf" id="offer-file"></div>
+              <p id="offer-existing" class="small muted"></p>
+              <div class="form-actions"><button class="button primary" type="submit" id="save-offer">Guardar como cotizada</button> <button type="button" class="text-button" id="cancel-offer">Cancelar</button></div>
+            </form>
+            <p id="offer-result" role="status" class="small"></p>
+          </section>
+        </div>
+      </article>
+    </section>
+    </div>
+  </main>
+  <footer class="shell footer"><p>Prototipo de Reac Studio para DI3D · Usá datos de ejemplo. Los cambios se guardan en este navegador.</p><span>Reac Studio</span></footer>
+</body>
+</html>
